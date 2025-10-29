@@ -3,7 +3,8 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 try {
-  oracledb.initOracleClient({ libDir: process.env.WALLET_PATH });
+  oracledb.initOracleClient({ configDir: process.env.WALLET_PATH });
+  console.log('✅ Oracle client initialized');
 } catch (err) {
   console.error('Error initializing Oracle client:', err);
 }
