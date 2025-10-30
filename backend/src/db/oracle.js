@@ -4,7 +4,7 @@ dotenv.config();
 
 try {
   oracledb.initOracleClient({ configDir: process.env.WALLET_PATH });
-  console.log('✅ Oracle client initialized');
+  console.log('Oracle client initialized');
 } catch (err) {
   console.error('Error initializing Oracle client:', err);
 }
@@ -18,10 +18,10 @@ const dbConfig = {
 export async function getConnection() {
   try {
     const connection = await oracledb.getConnection(dbConfig);
-    console.log('✅ Connected to Oracle DB');
+    console.log('Connected to Oracle DB');
     return connection;
   } catch (err) {
-    console.error('❌ Database connection failed:', err);
+    console.error('Database connection failed:', err);
     throw err;
   }
 }
