@@ -1,18 +1,56 @@
-export default function Sidebar() {
+export default function Sidebar({ solves = [] }) {
+  const format = (ms) => {
+    const sec = Math.floor(ms / 1000);
+    const dec = Math.floor((ms % 1000) / 10);
+    return `${sec}.${dec.toString().padStart(2, "0")}`;
+  };
+
+  const rawAvg = (arr) =>
+    arr.length === 0 ? null : arr.reduce((a, b) => a + b, 0) / arr.length;
+
+  const currentAo5 = format(rawAvg(solves.slice(0, 5)) || 0);
+  const currentAo12 = format(rawAvg(solves.slice(0, 12)) || 0);
+
+  const bestAo5 = solves.length >= 5
+    ? format(
+        Math.min(
+          ...solves
+            .map((_, i) => rawAvg(solves.slice(i, i + 5)))
+            .filter((v) => v !== null && !isNaN(v))
+        )
+      )
+    : "--";
+
+  const bestAo12 = solves.length >= 12
+    ? format(
+        Math.min(
+          ...solves
+            .map((_, i) => rawAvg(solves.slice(i, i + 12)))
+            .filter((v) => v !== null && !isNaN(v))
+        )
+      )
+    : "--";
+
+  const bestSingle = solves.length ? format(Math.min(...solves)) : "00.00";
+  const currentSingle = solves[0] ? format(solves[0]) : "00.00";
+
   return (
     <div className="w-64 bg-[#6D7276] text-white flex flex-col justify-between p-4">
-      {/* Logo + Buttons */}
-      <div>
-        <img src="/logo.jpg" alt="Cube Master Logo" className="w-full mb-6" />
-        <div className="space-y-4 mb-8">
-          <button className="w-full bg-[#29A7D1] text-white py-2 rounded">Timer</button>
-          <button className="w-full bg-[#29A7D1] text-white py-2 rounded">Trainer</button>
-          <button className="w-full bg-[#29A7D1] text-white py-2 rounded">Review</button>
+      {/* Top Section */}
+      <div className="flex flex-col space-y-6 overflow-hidden flex-grow">
+        {/* Logo + Buttons */}
+        <div>
+          <img src="/logo.jpg" alt="Cube Master Logo" className="w-full mb-6" />
+          <div className="space-y-4 mb-4">
+            <button className="w-full bg-[#29A7D1] text-white py-2 rounded">Timer</button>
+            <button className="w-full bg-[#29A7D1] text-white py-2 rounded">Trainer</button>
+            <button className="w-full bg-[#29A7D1] text-white py-2 rounded">Review</button>
+          </div>
         </div>
 
         {/* Stats Table */}
         <div
-          className="bg-[#B3B3B3] text-black p-2 mb-6 rounded-lg"
+          className="bg-[#B3B3B3] text-black p-2 rounded-lg"
           style={{ fontFamily: "'Share Tech Mono', monospace" }}
         >
           <div className="grid grid-cols-3 gap-2 text-sm">
@@ -21,22 +59,22 @@ export default function Sidebar() {
             <div className="font-bold">best</div>
 
             <div>time</div>
-            <div>25.74</div>
-            <div>22.13</div>
+            <div>{currentSingle}</div>
+            <div>{bestSingle}</div>
 
             <div>ao5</div>
-            <div>28.12</div>
-            <div>26.45</div>
+            <div>{currentAo5}</div>
+            <div>{bestAo5}</div>
 
             <div>ao12</div>
-            <div>30.01</div>
-            <div>27.89</div>
+            <div>{currentAo12}</div>
+            <div>{bestAo12}</div>
           </div>
         </div>
 
         {/* Solve History Table */}
         <div
-          className="bg-[#B3B3B3] text-black p-2 grow overflow-y-auto rounded-lg"
+          className="bg-[#B3B3B3] text-black p-2 overflow-y-auto rounded-lg flex-1"
           style={{ fontFamily: "'Share Tech Mono', monospace" }}
         >
           <table className="w-full text-sm">
@@ -49,21 +87,34 @@ export default function Sidebar() {
               </tr>
             </thead>
             <tbody>
-              <tr><td>9</td><td>25.74</td><td>28.12</td><td>30.01</td></tr>
-              <tr><td>8</td><td>30.54</td><td>28.12</td><td>30.01</td></tr>
-              <tr><td>7</td><td>29.06</td><td>28.12</td><td>30.01</td></tr>
-              <tr><td>6</td><td>32.67</td><td>28.12</td><td>30.01</td></tr>
-              <tr><td>5</td><td>30.54</td><td>28.12</td><td>30.01</td></tr>
-              <tr><td>4</td><td>29.06</td><td>28.12</td><td>30.01</td></tr>
-              <tr><td>3</td><td>25.74</td><td>28.12</td><td>30.01</td></tr>
-              <tr><td>2</td><td>32.67</td><td>28.12</td><td>30.01</td></tr>
+              {solves.map((s, i) => {
+                const ao5Slice = solves.slice(i, i + 5);
+                const ao12Slice = solves.slice(i, i + 12);
+
+                const ao5 = ao5Slice.length === 5
+                  ? format(ao5Slice.reduce((a, b) => a + b, 0) / 5)
+                  : "--";
+
+                const ao12 = ao12Slice.length === 12
+                  ? format(ao12Slice.reduce((a, b) => a + b, 0) / 12)
+                  : "--";
+
+                return (
+                  <tr key={i}>
+                    <td>{solves.length - i}</td>
+                    <td>{format(s)}</td>
+                    <td>{ao5}</td>
+                    <td>{ao12}</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
       </div>
 
       {/* Bottom Icons */}
-      <div className="flex justify-between items-center mt-4">
+      <div className="flex justify-between items-center pt-4">
         {/* Profile Icon */}
         <button className="text-white">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
@@ -73,7 +124,7 @@ export default function Sidebar() {
 
         {/* Signout Icon */}
         <button className="text-white">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-6 h-6">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
           </svg>
         </button>
