@@ -25,7 +25,7 @@ export default function useTimer(setScramble, setFocusMode) {
         setArmed(true);
         setTime(0); // Reset timer immediately
         setFocusMode(true); // Activate focus mode immediately
-        holdTimeout = setTimeout(() => setReady(true), 500); // Ready after 0.5s
+        holdTimeout = setTimeout(() => setReady(true), 200); // Ready after 0.2s
       }
     };
 

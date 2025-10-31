@@ -21,13 +21,13 @@ export default function TimerDisplay({ time, solves, armed, ready, running, focu
   return (
     <div className="flex flex-col items-center justify-center" style={{ fontFamily: "'Share Tech Mono', monospace" }}>
       <div className={`flex items-baseline mb-6 ${color}`}>
-        <span className="text-[18rem] font-bold leading-none">{main}</span>
-        <span className="text-[10rem] font-bold leading-none">.{decimal}</span>
+        <span className="text-[14rem] font-bold leading-none">{main}</span>
+        <span className="text-[8rem] font-bold leading-none">.{decimal}</span>
       </div>
       {!focusMode && (
         <>
-          <div className="text-[3rem] text-black">ao5: {avg(ao5)}</div>
-          <div className="text-[3rem] text-black">ao12: {avg(ao12)}</div>
+          <div className="text-[2rem] text-black">ao5: {avg(ao5)}</div>
+          <div className="text-[2rem] text-black">ao12: {avg(ao12)}</div>
         </>
       )}
     </div>

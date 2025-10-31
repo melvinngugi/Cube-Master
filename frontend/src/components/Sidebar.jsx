@@ -35,16 +35,16 @@ export default function Sidebar({ solves = [] }) {
   const currentSingle = solves[0] ? format(solves[0]) : "00.00";
 
   return (
-    <div className="w-64 bg-[#6D7276] text-white flex flex-col justify-between p-4">
+    <div className="w-64 bg-[#6D7276] text-white flex flex-col justify-between p-3">
       {/* Top Section */}
-      <div className="flex flex-col space-y-6 overflow-hidden flex-grow">
+      <div className="flex flex-col space-y-4 overflow-hidden flex-grow">
         {/* Logo + Buttons */}
         <div>
-          <img src="/logo.jpg" alt="Cube Master Logo" className="w-full mb-6" />
-          <div className="space-y-4 mb-4">
-            <button className="w-full bg-[#29A7D1] text-white py-2 rounded">Timer</button>
-            <button className="w-full bg-[#29A7D1] text-white py-2 rounded">Trainer</button>
-            <button className="w-full bg-[#29A7D1] text-white py-2 rounded">Review</button>
+          <img src="/logo.jpg" alt="Cube Master Logo" className="w-full mb-0" />
+          <div className="space-y-2 mt-0">
+            <button className="w-full bg-[#29A7D1] text-white py-2 rounded text-sm">Timer</button>
+            <button className="w-full bg-[#29A7D1] text-white py-2 rounded text-sm">Trainer</button>
+            <button className="w-full bg-[#29A7D1] text-white py-2 rounded text-sm">Review</button>
           </div>
         </div>
 
@@ -53,7 +53,7 @@ export default function Sidebar({ solves = [] }) {
           className="bg-[#B3B3B3] text-black p-2 rounded-lg"
           style={{ fontFamily: "'Share Tech Mono', monospace" }}
         >
-          <div className="grid grid-cols-3 gap-2 text-sm">
+          <div className="grid grid-cols-3 gap-1 text-sm">
             <div></div>
             <div className="font-bold">current</div>
             <div className="font-bold">best</div>
@@ -100,7 +100,7 @@ export default function Sidebar({ solves = [] }) {
                   : "--";
 
                 return (
-                  <tr key={i}>
+                  <tr key={i} className="align-top">
                     <td>{solves.length - i}</td>
                     <td>{format(s)}</td>
                     <td>{ao5}</td>
@@ -114,17 +114,14 @@ export default function Sidebar({ solves = [] }) {
       </div>
 
       {/* Bottom Icons */}
-      <div className="flex justify-between items-center pt-4">
-        {/* Profile Icon */}
+      <div className="flex justify-between items-center pt-3">
         <button className="text-white">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
           </svg>
         </button>
-
-        {/* Signout Icon */}
         <button className="text-white">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
           </svg>
         </button>
