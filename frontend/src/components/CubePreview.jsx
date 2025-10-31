@@ -1,8 +1,22 @@
-export default function CubePreview() {
+import { useEffect, useRef, useState } from "react";
+
+export default function CubePreview({ scramble }) {
+  const twistyRef = useRef(null);
+
+  useEffect(() => {
+    if (twistyRef.current && scramble) {
+      twistyRef.current.setAttribute("alg", scramble);
+    }
+  }, [scramble]);
+
   return (
-    <div className="w-32 h-32 border border-gray-400 bg-white flex items-center justify-center">
-      {/* Placeholder for cube net */}
-      <span className="text-xs text-gray-500">Cube Preview</span>
+    <div className="p-2">
+      <twisty-player
+        ref={twistyRef}
+        background="none"
+        control-panel="none"
+        style={{ width: "200px", height: "200px" }}
+      ></twisty-player>
     </div>
   );
 }
