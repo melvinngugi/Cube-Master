@@ -23,9 +23,9 @@ export default function useTimer(setScramble, setFocusMode) {
     const handleKeyDown = (e) => {
       if (e.code === "Space" && !armed && !running) {
         setArmed(true);
-        setTime(0); // Reset timer immediately
-        setFocusMode(true); // Activate focus mode immediately
-        holdTimeout = setTimeout(() => setReady(true), 200); // Ready after 0.2s
+        setTime(0); //Reset timer
+        setFocusMode(true); // Activate focus mode
+        holdTimeout = setTimeout(() => setReady(true), 200); // Delay
       }
     };
 
@@ -33,7 +33,7 @@ export default function useTimer(setScramble, setFocusMode) {
       if (e.code === "Space") {
         if (armed && ready && !running) {
           setRunning(true); // Start timer
-          // Focus mode already active — no need to set again
+          
         } else if (running) {
           setRunning(false); // Stop timer
           setFocusMode(false); // Deactivate focus mode
