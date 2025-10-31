@@ -8,13 +8,21 @@ export default function useTimer(setScramble, setFocusMode) {
   const [solves, setSolves] = useState([]);
 
   useEffect(() => {
-    let interval;
+    let animationFrame;
+    let startTime;
+
+    const updateTime = () => {
+      const now = Date.now();
+      setTime(now - startTime);
+      animationFrame = requestAnimationFrame(updateTime);
+    };
+
     if (running) {
-      interval = setInterval(() => setTime((t) => t + 10), 10);
-    } else {
-      clearInterval(interval);
+      startTime = Date.now();
+      animationFrame = requestAnimationFrame(updateTime);
     }
-    return () => clearInterval(interval);
+
+    return () => cancelAnimationFrame(animationFrame);
   }, [running]);
 
   useEffect(() => {
@@ -23,9 +31,9 @@ export default function useTimer(setScramble, setFocusMode) {
     const handleKeyDown = (e) => {
       if (e.code === "Space" && !armed && !running) {
         setArmed(true);
-        setTime(0); //Reset timer
-        setFocusMode(true); // Activate focus mode
-        holdTimeout = setTimeout(() => setReady(true), 200); // Delay
+        setTime(0); // Reset timer immediately
+        setFocusMode(true); // Activate focus mode immediately
+        holdTimeout = setTimeout(() => setReady(true), 500); // Ready after 0.5s
       }
     };
 
@@ -33,7 +41,6 @@ export default function useTimer(setScramble, setFocusMode) {
       if (e.code === "Space") {
         if (armed && ready && !running) {
           setRunning(true); // Start timer
-          
         } else if (running) {
           setRunning(false); // Stop timer
           setFocusMode(false); // Deactivate focus mode
