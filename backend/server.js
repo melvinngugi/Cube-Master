@@ -1,8 +1,8 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import authRoutes from "./routes/authRoutes.js";
-import { getConnection } from "./db/oracle.js";
+import authRoutes from "./src/routes/authRoutes.js";
+import { getConnection } from "./src/db/oracle.js";
 
 dotenv.config();
 const app = express();
