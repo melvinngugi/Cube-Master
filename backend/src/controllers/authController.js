@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { createUser, findUserByEmail } from "../models/userModel.js";
 
+// Signup controller
 export const signup = async (req, res) => {
   try {
     const { username, email, password } = req.body;
@@ -30,6 +31,7 @@ export const signup = async (req, res) => {
   }
 };
 
+// Login controller
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -57,6 +59,40 @@ export const login = async (req, res) => {
     res.json({ message: "Login successful", token });
   } catch (error) {
     console.error("Login error:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+// Profile controller
+export const getProfile = async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      return res.status(401).json({ message: "No token provided" });
+    }
+
+    const token = authHeader.split(" ")[1];
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (err) {
+      return res.status(401).json({ message: "Invalid token" });
+    }
+
+    const user = await findUserByEmail(decoded.email);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({
+      user: {
+        id: user.ID,
+        username: user.USERNAME,
+        email: user.EMAIL,
+      },
+    });
+  } catch (error) {
+    console.error("Profile error:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };

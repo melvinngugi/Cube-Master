@@ -1,53 +1,102 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "../context/AuthContext";
 import LoginModal from "./LoginModal";
 import LogoutConfirm from "./LogoutConfirm";
+import ProfileModal from "./ProfileModal";
 
-export default function Sidebar({ solves = [] }) {
-  const { user } = useAuth();
+export default function Sidebar({ solves = [], setDbSolvesExternal }) {
+  const { user, token } = useAuth();
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [dbSolves, setDbSolves] = useState([]);
 
+  // Expose a function to the parent so it can update dbSolves incrementally
+  useEffect(() => {
+    if (setDbSolvesExternal) {
+      setDbSolvesExternal((updateFn) => {
+        setDbSolves((prev) => {
+          const updated =
+            typeof updateFn === "function" ? updateFn(prev) : updateFn;
+          return [...updated]; // ensures a new array identity and stable rerender
+        });
+      });
+    }
+  }, [setDbSolvesExternal]);
+
+  // Fetch solves on initial load only
+  useEffect(() => {
+    if (!user || !token) return;
+
+    const fetchSolves = async () => {
+      try {
+        const res = await fetch(`/api/v1/solves/${user.id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+
+        if (data.solves) {
+          setDbSolves(data.solves);
+        }
+      } catch (err) {
+        console.error("Failed to fetch solves:", err);
+      }
+    };
+
+    fetchSolves();
+  }, []); // run once
+
+  // Format time in seconds.deciseconds
   const format = (ms) => {
     const sec = Math.floor(ms / 1000);
     const dec = Math.floor((ms % 1000) / 10);
     return `${sec}.${dec.toString().padStart(2, "0")}`;
   };
 
+  // Utility for averages
   const rawAvg = (arr) =>
     arr.length === 0 ? null : arr.reduce((a, b) => a + b, 0) / arr.length;
 
-  const currentAo5 = format(rawAvg(solves.slice(0, 5)) || 0);
-  const currentAo12 = format(rawAvg(solves.slice(0, 12)) || 0);
+  // Memoize displayed solves to prevent flicker
+  const displaySolves = useMemo(() => {
+    return user ? dbSolves.map((s) => s.SOLVE_TIME) : solves;
+  }, [dbSolves, solves, user]);
 
-  const bestAo5 = solves.length >= 5
-    ? format(
-        Math.min(
-          ...solves
-            .map((_, i) => rawAvg(solves.slice(i, i + 5)))
-            .filter((v) => v !== null && !isNaN(v))
+  const currentAo5 = format(rawAvg(displaySolves.slice(0, 5)) || 0);
+  const currentAo12 = format(rawAvg(displaySolves.slice(0, 12)) || 0);
+
+  const bestAo5 =
+    displaySolves.length >= 5
+      ? format(
+          Math.min(
+            ...displaySolves
+              .map((_, i) => rawAvg(displaySolves.slice(i, i + 5)))
+              .filter((v) => v !== null && !isNaN(v))
+          )
         )
-      )
-    : "--";
+      : "--";
 
-  const bestAo12 = solves.length >= 12
-    ? format(
-        Math.min(
-          ...solves
-            .map((_, i) => rawAvg(solves.slice(i, i + 12)))
-            .filter((v) => v !== null && !isNaN(v))
+  const bestAo12 =
+    displaySolves.length >= 12
+      ? format(
+          Math.min(
+            ...displaySolves
+              .map((_, i) => rawAvg(displaySolves.slice(i, i + 12)))
+              .filter((v) => v !== null && !isNaN(v))
+          )
         )
-      )
-    : "--";
+      : "--";
 
-  const bestSingle = solves.length ? format(Math.min(...solves)) : "00.00";
-  const currentSingle = solves[0] ? format(solves[0]) : "00.00";
+  const bestSingle = displaySolves.length
+    ? format(Math.min(...displaySolves))
+    : "00.00";
+  const currentSingle = displaySolves[0]
+    ? format(displaySolves[0])
+    : "00.00";
 
   return (
     <div className="w-64 bg-[#6D7276] text-white flex flex-col justify-between p-3">
-      {/* Top Section */}
       <div className="flex flex-col space-y-4 overflow-hidden flex-grow">
-        {/* Logo + Buttons */}
         <div>
           <img src="/logo.jpg" alt="Cube Master Logo" className="w-full mb-0" />
           <div className="space-y-2 mt-0">
@@ -57,7 +106,6 @@ export default function Sidebar({ solves = [] }) {
           </div>
         </div>
 
-        {/* Stats Table */}
         <div
           className="bg-[#B3B3B3] text-black p-2 rounded-lg"
           style={{ fontFamily: "'Share Tech Mono', monospace" }}
@@ -81,7 +129,6 @@ export default function Sidebar({ solves = [] }) {
           </div>
         </div>
 
-        {/* Solve History Table */}
         <div
           className="bg-[#B3B3B3] text-black p-2 overflow-y-auto rounded-lg flex-1"
           style={{ fontFamily: "'Share Tech Mono', monospace" }}
@@ -96,21 +143,23 @@ export default function Sidebar({ solves = [] }) {
               </tr>
             </thead>
             <tbody>
-              {solves.map((s, i) => {
-                const ao5Slice = solves.slice(i, i + 5);
-                const ao12Slice = solves.slice(i, i + 12);
+              {displaySolves.map((s, i) => {
+                const ao5Slice = displaySolves.slice(i, i + 5);
+                const ao12Slice = displaySolves.slice(i, i + 12);
 
-                const ao5 = ao5Slice.length === 5
-                  ? format(ao5Slice.reduce((a, b) => a + b, 0) / 5)
-                  : "--";
+                const ao5 =
+                  ao5Slice.length === 5
+                    ? format(ao5Slice.reduce((a, b) => a + b, 0) / 5)
+                    : "--";
 
-                const ao12 = ao12Slice.length === 12
-                  ? format(ao12Slice.reduce((a, b) => a + b, 0) / 12)
-                  : "--";
+                const ao12 =
+                  ao12Slice.length === 12
+                    ? format(ao12Slice.reduce((a, b) => a + b, 0) / 12)
+                    : "--";
 
                 return (
                   <tr key={i} className="align-top">
-                    <td>{solves.length - i}</td>
+                    <td>{displaySolves.length - i}</td>
                     <td>{format(s)}</td>
                     <td>{ao5}</td>
                     <td>{ao12}</td>
@@ -122,16 +171,22 @@ export default function Sidebar({ solves = [] }) {
         </div>
       </div>
 
-      {/* Bottom Icons */}
       <div className="flex justify-between items-center pt-3">
-        {/* Profile Icon */}
-        <button className="text-white" onClick={() => setShowLoginModal(true)}>
+        <button
+          className="text-white"
+          onClick={() => {
+            if (user) {
+              setShowProfileModal(true);
+            } else {
+              setShowLoginModal(true);
+            }
+          }}
+        >
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
           </svg>
         </button>
 
-        {/* Logout Icon */}
         {user && (
           <button className="text-white" onClick={() => setShowLogoutConfirm(true)}>
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
@@ -141,9 +196,9 @@ export default function Sidebar({ solves = [] }) {
         )}
       </div>
 
-      {/* Modals */}
       {showLoginModal && <LoginModal onClose={() => setShowLoginModal(false)} />}
       {showLogoutConfirm && <LogoutConfirm onClose={() => setShowLogoutConfirm(false)} />}
+      {showProfileModal && <ProfileModal user={user} onClose={() => setShowProfileModal(false)} />}
     </div>
   );
 }
