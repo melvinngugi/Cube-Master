@@ -4,6 +4,7 @@ import ScrambleBar from "../components/ScrambleBar";
 import Sidebar from "../components/Sidebar";
 import SolveGrid from "../components/SolveGrid";
 import SolutionBar from "../components/SolutionBar";
+import CubePreview from "../components/CubePreview";
 
 export default function ReviewPage() {
   const { user, token } = useAuth();
@@ -45,24 +46,31 @@ export default function ReviewPage() {
         {/* Scramble bar */}
         <ScrambleBar scramble={selectedSolve?.scramble_text} />
 
-        {/* Solve grid */}
-        <div className="flex-1 overflow-y-auto mt-24 px-6 py-4">
-          <SolveGrid
-            solves={solves}
-            selectedId={selectedSolve?.solve_id}
-            onSelect={handleSelect}
-          />
+        {/* Middle and right sections */}
+        <div className="flex flex-1 overflow-hidden mt-24">
+          {/* Middle: solve list + solutions */}
+          <div className="flex flex-col w-2/3 px-6 py-4 space-y-4 overflow-y-auto">
+            <SolveGrid
+              solves={solves}
+              selectedId={selectedSolve?.solve_id}
+              onSelect={handleSelect}
+            />
+            <SolutionBar
+              beginnerSolution={selectedSolve?.beginner_generated_solution}
+              advancedSolution={selectedSolve?.advanced_generated_solution}
+            />
+          </div>
+
+          {/* Right: cube preview + chart */}
+          <div className="w-1/3 px-4 py-4 flex flex-col items-center space-y-4">
+            <CubePreview scramble={selectedSolve?.scramble_text} />
+            <div className="bg-white rounded shadow w-full h-64 flex items-center justify-center text-gray-500 font-mono text-sm">
+              Performance chart coming soon
+            </div>
+          </div>
         </div>
 
-        {/* Solution bar */}
-        <div className="px-6 pb-6">
-          <SolutionBar
-            beginnerSolution={selectedSolve?.beginner_generated_solution}
-            advancedSolution={selectedSolve?.advanced_generated_solution}
-          />
-        </div>
-
-        {/* Optional loading indicator */}
+        {/* loading indicator */}
         {loading && (
           <div className="absolute bottom-4 right-4 text-xs text-gray-200">
             Syncing…
