@@ -7,12 +7,25 @@ import Sidebar from "../components/Sidebar";
 import { useAuth } from "../context/AuthContext";
 
 export default function TimerDashboard() {
-  const { user, token } = useAuth(); // ✅ access auth state
+  const { user, token } = useAuth(); // access auth state
   const [scramble, setScramble] = useState("");
   const [eventId, setEventId] = useState("333");
   const [focusMode, setFocusMode] = useState(false);
 
-  const { time, running, solves, armed, ready } = useTimer(setScramble, setFocusMode);
+  const { time, running, solves, armed, ready } = useTimer(
+    setScramble,
+    setFocusMode
+  );
+
+  // store sidebar helpers (addSolve, editSolve, replaceAll)
+  const [sidebarHelpers, setSidebarHelpers] = useState(null);
+
+  // callback to update sidebar instantly after a solve is saved
+  const handleSolveSaved = (newSolve) => {
+    if (sidebarHelpers?.addSolve) {
+      sidebarHelpers.addSolve(newSolve);
+    }
+  };
 
   return (
     <div className="flex h-screen bg-[#B4B6B9]">
@@ -21,6 +34,7 @@ export default function TimerDashboard() {
           solves={solves}
           user={user}
           isAuthenticated={!!token}
+          setDbSolvesExternal={setSidebarHelpers} // capture helpers from Sidebar
         />
       )}
       <div className="flex flex-col flex-1 relative">
@@ -39,6 +53,10 @@ export default function TimerDashboard() {
             ready={ready}
             running={running}
             focusMode={focusMode}
+            scramble={scramble}   //pass scramble down
+            user={user}           //pass user down
+            token={token}         //pass token down
+            onSolveSaved={handleSolveSaved} //pass callback down
           />
         </div>
         {!focusMode && (

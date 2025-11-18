@@ -3,6 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import LoginModal from "./LoginModal";
 import LogoutConfirm from "./LogoutConfirm";
 import ProfileModal from "./ProfileModal";
+import { useNavigate } from "react-router-dom";
 
 export default function Sidebar({ solves = [], setDbSolvesExternal }) {
   const { user, token } = useAuth();
@@ -10,21 +11,26 @@ export default function Sidebar({ solves = [], setDbSolvesExternal }) {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [dbSolves, setDbSolves] = useState([]);
+  const navigate = useNavigate();
 
   // Expose a function to the parent so it can update dbSolves incrementally
   useEffect(() => {
     if (setDbSolvesExternal) {
-      setDbSolvesExternal((updateFn) => {
-        setDbSolves((prev) => {
-          const updated =
-            typeof updateFn === "function" ? updateFn(prev) : updateFn;
-          return [...updated]; // ensures a new array identity and stable rerender
-        });
+      setDbSolvesExternal({
+        addSolve: (newSolve) =>
+          setDbSolves((prev) => [newSolve, ...prev]),
+        editSolve: (updatedSolve) =>
+          setDbSolves((prev) =>
+            prev.map((s) =>
+              s.solve_id === updatedSolve.solve_id ? updatedSolve : s
+            )
+          ),
+        replaceAll: (solves) => setDbSolves(solves),
       });
     }
   }, [setDbSolvesExternal]);
 
-  // Fetch solves on initial load only
+  // Fetch solves on initial load
   useEffect(() => {
     if (!user || !token) return;
 
@@ -34,7 +40,6 @@ export default function Sidebar({ solves = [], setDbSolvesExternal }) {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
-
         if (data.solves) {
           setDbSolves(data.solves);
         }
@@ -44,7 +49,7 @@ export default function Sidebar({ solves = [], setDbSolvesExternal }) {
     };
 
     fetchSolves();
-  }, []); // run once
+  }, [user, token]); //refetch when login state changes
 
   // Format time in seconds.deciseconds
   const format = (ms) => {
@@ -59,7 +64,11 @@ export default function Sidebar({ solves = [], setDbSolvesExternal }) {
 
   // Memoize displayed solves to prevent flicker
   const displaySolves = useMemo(() => {
-    return user ? dbSolves.map((s) => s.SOLVE_TIME) : solves;
+    if (!user) return solves;
+    return dbSolves.map((s) => {
+      const raw = s.solve_time ?? s.SOLVE_TIME;
+      return typeof raw === "number" ? raw : Number(raw);
+    });
   }, [dbSolves, solves, user]);
 
   const currentAo5 = format(rawAvg(displaySolves.slice(0, 5)) || 0);
@@ -100,9 +109,9 @@ export default function Sidebar({ solves = [], setDbSolvesExternal }) {
         <div>
           <img src="/logo.jpg" alt="Cube Master Logo" className="w-full mb-0" />
           <div className="space-y-2 mt-0">
-            <button className="w-full bg-[#29A7D1] text-white py-2 rounded text-sm">Timer</button>
-            <button className="w-full bg-[#29A7D1] text-white py-2 rounded text-sm">Trainer</button>
-            <button className="w-full bg-[#29A7D1] text-white py-2 rounded text-sm">Review</button>
+            <button className="w-full bg-[#29A7D1] text-white py-2 rounded text-sm" onClick={() => navigate("/")}>Timer</button>
+            <button className="w-full bg-[#29A7D1] text-white py-2 rounded text-sm" onClick={() => navigate("/trainer")}>Trainer</button>
+            <button className="w-full bg-[#29A7D1] text-white py-2 rounded text-sm" onClick={() => navigate("/review")}>Review</button>
           </div>
         </div>
 
