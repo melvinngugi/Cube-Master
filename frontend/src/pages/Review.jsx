@@ -5,6 +5,7 @@ import Sidebar from "../components/Sidebar";
 import SolveGrid from "../components/SolveGrid";
 import SolutionBar from "../components/SolutionBar";
 import CubePreview from "../components/CubePreview";
+import PerformanceChart from "../components/PerformanceChart";
 
 export default function ReviewPage() {
   const { user, token } = useAuth();
@@ -57,30 +58,27 @@ export default function ReviewPage() {
       {/* Main content */}
       <div className="flex flex-col flex-1 relative">
         {/* Scramble bar */}
-        <ScrambleBar scramble={selectedSolve?.scramble_text} />
+        <ScrambleBar scramble={selectedSolve?.scramble_text} eventId="333" />
 
         {/* Middle and right sections */}
         <div className="flex flex-1 overflow-hidden mt-24">
           {/* Middle: solve list + solutions */}
-            <div className="flex flex-col w-2/3 px-6 py-4 space-y-4 overflow-y-auto">
-              <SolveGrid
-                solves={solves}
-                selectedId={selectedSolve?.solve_id}
-                onSelect={handleSelect}
-              />
-
-              <SolutionBar
-                beginnerSolution={selectedSolve?.beginner_generated_solution}
-                advancedSolution={selectedSolve?.advanced_generated_solution}
-              />
-            </div>
+          <div className="flex flex-col w-2/3 px-6 py-4 space-y-4 overflow-y-auto">
+            <SolveGrid
+              solves={solves}
+              selectedId={selectedSolve?.solve_id}
+              onSelect={handleSelect}
+            />
+            <SolutionBar
+              beginnerSolution={selectedSolve?.beginner_generated_solution}
+              advancedSolution={selectedSolve?.advanced_generated_solution}
+            />
+          </div>
 
           {/* Right: cube preview + chart */}
           <div className="w-1/3 px-4 py-4 flex flex-col items-center space-y-4">
             <CubePreview scramble={selectedSolve?.scramble_text} />
-            <div className="bg-white rounded shadow w-full h-64 flex items-center justify-center text-gray-500 font-mono text-sm">
-              Performance chart coming soon
-            </div>
+            <PerformanceChart solves={solves} />
           </div>
         </div>
 
