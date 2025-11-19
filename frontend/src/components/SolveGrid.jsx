@@ -7,37 +7,43 @@ export default function SolveGrid({ solves, selectedId, onSelect }) {
         <div className="text-sm text-gray-500">No solves yet.</div>
       ) : (
         solves.map((solve, index) => {
-          const rawTime = solve.solve_time ?? solve.SOLVE_TIME;
+          //Use normalized camelCase fields
+          const rawTime = solve.solve_time;
           const timeMs =
             typeof rawTime === "number"
-              ? rawTime < 1000 ? rawTime * 1000 : rawTime
+              ? rawTime < 1000
+                ? rawTime * 1000
+                : rawTime
               : Number(rawTime);
 
           const displayTime = isNaN(timeMs)
             ? "00.00"
             : formatMsToSecDeci(timeMs);
 
-          // Format TIMESTAMP from DB as DD/MM/YY
-          const timestamp = solve.TIMESTAMP
-            ? new Date(solve.TIMESTAMP).toLocaleDateString("en-GB", {
+          //Format timestamp
+          const timestamp = solve.timestamp
+            ? new Date(solve.timestamp).toLocaleDateString("en-GB", {
                 day: "2-digit",
                 month: "2-digit",
                 year: "2-digit",
               })
             : "--";
 
+          //Compare against camelCase solve_id
+          const isSelected = selectedId === solve.solve_id;
+
           return (
             <button
-              key={
-                solve.solve_id ??
-                `${timestamp}-${displayTime}-${index}`
-              }
+              key={solve.solve_id ?? `${timestamp}-${displayTime}-${index}`}
               onClick={() => onSelect(solve)}
-              className="flex flex-col items-start px-2 py-1 rounded shadow"
+              className={`flex flex-col items-start px-2 py-1 rounded shadow transition-transform duration-150 ease-in-out ${
+                isSelected
+                  ? "bg-gray-350 border-2 border-black"
+                  : "bg-[#D9D9D9] hover:scale-105 hover:shadow-md"
+              }`}
               style={{
-                backgroundColor: "#D9D9D9",
-                width: "100px",
-                height: "55px",
+                width: "111px",
+                height: "60px",
               }}
               title={solve.scramble_text || ""}
             >

@@ -21,9 +21,22 @@ export default function ReviewPage() {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
+
+        console.log("Raw solves from API:", data.solves[0]);
+
         if (Array.isArray(data.solves)) {
-          setSolves(data.solves);
-          setSelectedSolve((prev) => prev ?? data.solves[0] ?? null);
+          //Normalize DB fields to camelCase
+          const normalized = data.solves.map((s) => ({
+            solve_id: s.SOLVE_ID,
+            scramble_text: s.SCRAMBLE_TEXT,
+            timestamp: s.TIMESTAMP,
+            solve_time: s.SOLVE_TIME,
+            beginner_generated_solution: s.BEGINNER_GENERATED_SOLUTION,
+            advanced_generated_solution: s.ADVANCED_GENERATED_SOLUTION,
+          }));
+
+          setSolves(normalized);
+          setSelectedSolve((prev) => prev ?? normalized[0] ?? null);
         }
       } catch (err) {
         console.error("Failed to fetch solves:", err);
@@ -49,17 +62,18 @@ export default function ReviewPage() {
         {/* Middle and right sections */}
         <div className="flex flex-1 overflow-hidden mt-24">
           {/* Middle: solve list + solutions */}
-          <div className="flex flex-col w-2/3 px-6 py-4 space-y-4 overflow-y-auto">
-            <SolveGrid
-              solves={solves}
-              selectedId={selectedSolve?.solve_id}
-              onSelect={handleSelect}
-            />
-            <SolutionBar
-              beginnerSolution={selectedSolve?.beginner_generated_solution}
-              advancedSolution={selectedSolve?.advanced_generated_solution}
-            />
-          </div>
+            <div className="flex flex-col w-2/3 px-6 py-4 space-y-4 overflow-y-auto">
+              <SolveGrid
+                solves={solves}
+                selectedId={selectedSolve?.solve_id}
+                onSelect={handleSelect}
+              />
+
+              <SolutionBar
+                beginnerSolution={selectedSolve?.beginner_generated_solution}
+                advancedSolution={selectedSolve?.advanced_generated_solution}
+              />
+            </div>
 
           {/* Right: cube preview + chart */}
           <div className="w-1/3 px-4 py-4 flex flex-col items-center space-y-4">
