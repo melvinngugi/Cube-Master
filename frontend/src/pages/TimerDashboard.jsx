@@ -20,10 +20,41 @@ export default function TimerDashboard() {
   // store sidebar helpers (addSolve, editSolve, replaceAll)
   const [sidebarHelpers, setSidebarHelpers] = useState(null);
 
-  // callback to update sidebar instantly after a solve is saved
-  const handleSolveSaved = (newSolve) => {
-    if (sidebarHelpers?.addSolve) {
-      sidebarHelpers.addSolve(newSolve);
+  // callback when TimerDisplay signals a solve finished
+  const handleSolveSaved = async (newSolve) => {
+    if (!user || !token) return;
+
+    try {
+      const res = await fetch("/api/v1/solves", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          user_id: user.id,
+          scramble_text: newSolve.scramble_text,
+          solve_time: newSolve.solve_time, //always numeric ms
+          beginner_generated_solution: null,
+          advanced_generated_solution: null,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        // update sidebar instantly with normalized solve object
+        if (sidebarHelpers?.addSolve) {
+          sidebarHelpers.addSolve({
+            ...newSolve,
+            solve_id: data.solve_id ?? undefined,
+          });
+        }
+      } else {
+        console.error("Failed to save solve:", data);
+      }
+    } catch (err) {
+      console.error("Error saving solve:", err);
     }
   };
 
@@ -53,10 +84,8 @@ export default function TimerDashboard() {
             ready={ready}
             running={running}
             focusMode={focusMode}
-            scramble={scramble}   //pass scramble down
-            user={user}           //pass user down
-            token={token}         //pass token down
-            onSolveSaved={handleSolveSaved} //pass callback down
+            scramble={scramble}
+            onSolveSaved={handleSolveSaved} // parent handles DB insert
           />
         </div>
         {!focusMode && (

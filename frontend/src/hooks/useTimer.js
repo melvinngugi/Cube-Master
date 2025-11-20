@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
-import { useAuth } from "../context/AuthContext";
 
 export default function useTimer(setScramble, setFocusMode) {
-  const { token, user } = useAuth(); // access auth state
   const [time, setTime] = useState(0);
   const [running, setRunning] = useState(false);
   const [armed, setArmed] = useState(false);
@@ -42,7 +40,7 @@ export default function useTimer(setScramble, setFocusMode) {
       }
     };
 
-    const handleKeyUp = async (e) => {
+    const handleKeyUp = (e) => {
       if (e.code === "Space") {
         if (armed && ready && !running) {
           setRunning(true); // start timer
@@ -51,35 +49,13 @@ export default function useTimer(setScramble, setFocusMode) {
           setFocusMode(false); // deactivate focus mode
 
           const newSolve = {
-            time,
-            scramble: scrambleString,
+            solve_time: time,              //use solve_time consistently
+            scramble_text: scrambleString, //match DB field names
             timestamp: new Date().toISOString(),
           };
 
-          // always update local state
+          // update local state only
           setSolves((prev) => [newSolve, ...prev]);
-
-          // if logged in, also save to DB
-          if (token && user) {
-            try {
-              await fetch("/api/v1/solves", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({
-                  user_id: user.id,
-                  scramble_text: scrambleString, //send scramble text
-                  solve_time: time,
-                  beginner_generated_solution: null,
-                  advanced_generated_solution: null,
-                }),
-              });
-            } catch (err) {
-              console.error("Failed to save solve:", err);
-            }
-          }
 
           // generate next scramble
           if (setScramble && typeof window.getWcaScramble === "function") {
@@ -101,7 +77,7 @@ export default function useTimer(setScramble, setFocusMode) {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
-  }, [armed, ready, running, time, setScramble, setFocusMode, token, user, scrambleString]);
+  }, [armed, ready, running, time, setScramble, setFocusMode, scrambleString]);
 
   return { time, running, solves, armed, ready };
 }
