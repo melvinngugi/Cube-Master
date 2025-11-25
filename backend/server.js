@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import authRoutes from "./src/routes/authRoutes.js";
 import solveRoutes from "./src/routes/solveRoutes.js";
+import solutionRoutes from "./src/routes/solutionRoutes.js";
 import { getConnection } from "./src/db/oracle.js";
 
 dotenv.config();
@@ -15,6 +16,7 @@ app.use(express.json());
 // Routes
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/solves", solveRoutes);
+app.use("/api/v1", solutionRoutes);
 
 // Test DB connection
 async function testDBConnection() {
