@@ -2,7 +2,7 @@ import oracledb from "oracledb";
 import dotenv from "dotenv";
 dotenv.config();
 
-// Initialize Oracle client with wallet (for Autonomous DB)
+// Initialize Oracle client with wallet
 try {
   oracledb.initOracleClient({ configDir: process.env.WALLET_PATH });
   console.log("Oracle client initialized");
