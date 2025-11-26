@@ -5,16 +5,15 @@ import { replaceLastLayerWithBeginner2Look } from "./lastLayer.js";
 import { normalizeMoves, optimizeMoves } from "../utils/moveUtils.js";
 
 export async function generateBeginner2LookCFOP(scramble) {
-  // Build cube from scramble
   const cs = new CubeState(scramble);
 
-  // Cross (pass scramble string and the CubeState)
+  // Cross using csTimer’s module
   const crossMoves = solveWhiteCross(scramble, cs);
 
-  // F2L placeholder
+  // F2L placeholder (add your implementation when ready)
   const f2lMoves = "";
 
-  // Last layer replacement (as you already have)
+  // Last layer (as you already have)
   const { llCombined, llSteps } = await replaceLastLayerWithBeginner2Look({});
 
   const merged = normalizeMoves(`${crossMoves} ${f2lMoves} ${llCombined}`.trim());
@@ -30,6 +29,6 @@ export async function generateBeginner2LookCFOP(scramble) {
     profile: "beginner-2look",
     steps,
     moves: optimized,
-    meta: { replacedLL: true, source: "cfop-beginner-v1" },
+    meta: { replacedLL: true, source: "cfop-cstimer-cross" },
   };
 }
