@@ -3,7 +3,7 @@ import mathlib from "./mathlib.js";
 import { parseScramble } from "./cubeutil.js";
 
 /**
- * Wrapper around csTimer's CubieCube for applying scrambles and moves.
+ * Cube state using csTimer's CubieCube representation.
  */
 export class CsTimerCubeState {
   constructor(scrambleStr = "") {
@@ -17,23 +17,20 @@ export class CsTimerCubeState {
     const moves = parseScramble(scrambleStr, "FRUBLD");
     const d = new mathlib.CubieCube();
     for (const m of moves) {
-      // m = [axis, layer, pow], axis in FRUBLD order mapped to 0..5, pow=1..3
       const axis = m[0];
       const pow = m[2];
-      const moveIdx = axis * 3 + (pow - 1);
+      const moveIdx = axis * 3 + pow - 1;
       mathlib.CubieCube.CubeMult(this.cube, mathlib.CubieCube.moveCube[moveIdx], d);
       this.cube.init(d.ca, d.ea);
     }
   }
 
-  applySolution(solutionMovesStr) {
-    if (!solutionMovesStr) return;
+  applySolution(solutionMoves) {
     const d = new mathlib.CubieCube();
-    const tokens = solutionMovesStr.split(" ").filter(Boolean);
-    for (const token of tokens) {
-      // Convert token like "R", "U'", "F2" to move index using CubieCube helper
-      const idx = this.cube.selfMoveStr(token);
-      mathlib.CubieCube.CubeMult(this.cube, mathlib.CubieCube.moveCube[idx], d);
+    for (const move of solutionMoves.split(" ")) {
+      if (!move) continue;
+      const m = this.cube.selfMoveStr(move);
+      mathlib.CubieCube.CubeMult(this.cube, mathlib.CubieCube.moveCube[m], d);
       this.cube.init(d.ca, d.ea);
     }
   }

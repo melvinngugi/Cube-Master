@@ -1504,3 +1504,5 @@ var mathlib = (function() {
 })();
 
 export default mathlib;
+globalThis.mathlib = mathlib;
+globalThis.CubieCube = mathlib.CubieCube;

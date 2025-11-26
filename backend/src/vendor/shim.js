@@ -1,20 +1,4 @@
-// Provide a safe default rndFunc
-if (typeof globalThis.rndFunc !== "function") {
-  globalThis.rndFunc = function () {
-    return Math.floor(Math.random() * 0x100000000);
-  };
-}
-
-// Provide a stub isaac with seed/random
-if (typeof globalThis.isaac === "undefined") {
-  globalThis.isaac = {
-    seed: function () {},
-    random: function () {
-      return Math.floor(Math.random() * 0x100000000);
-    },
-  };
-}
-
+// backend/src/vendor/shim.js
 
 // jQuery-like helpers
 globalThis.$ = globalThis.$ || {
@@ -31,8 +15,8 @@ if (typeof globalThis.DEBUG === "undefined") {
 // ISAAC RNG shim
 if (typeof globalThis.isaac === "undefined") {
   globalThis.isaac = {
-    seed: function () {},
-    rand: function () {
+    seed: function () {}, // no-op
+    random: function () {
       return Math.floor(Math.random() * 0x100000000);
     },
   };
@@ -40,7 +24,15 @@ if (typeof globalThis.isaac === "undefined") {
 
 // rndFunc shim
 if (typeof globalThis.rndFunc !== "function") {
+  // Default to isaac.random if available, else Math.random
   globalThis.rndFunc = function () {
-    return Math.floor(Math.random() * 0x100000000);
+    return (globalThis.isaac && typeof globalThis.isaac.random === "function")
+      ? globalThis.isaac.random()
+      : Math.floor(Math.random() * 0x100000000);
   };
+}
+
+// csTimer UI flag shim
+if (typeof globalThis.ISCSTIMER === "undefined") {
+  globalThis.ISCSTIMER = false;
 }
