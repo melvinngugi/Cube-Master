@@ -1,132 +1,55 @@
 // backend/src/services/crossSolver.js
+import { createRequire } from "node:module";
 import { normalizeMoves, optimizeMoves } from "../utils/moveUtils.js";
+import { searchCrossFromFacelet, isCrossSolvedString } from "./crossSearch.js";
+
+const require = createRequire(import.meta.url);
+const Cube = require("cubejs");
 
 /**
- * Solve the white cross on D using beginner CFOP logic.
- * Handles different orientations of white edges.
+ * Solve the white cross using search from the scrambled cube.
+ * Accepts the scramble (move string) and a shared CubeState to apply results to.
  */
-export function solveWhiteCross(cubeState) {
-  console.log("=== Starting Cross Solver (CFOP Cross) ===");
-  console.log("Scramble state:", cubeState.toString());
+export function solveWhiteCross(scramble, cubeState) {
+  console.log("=== Starting Cross Solver (Search CFOP Cross) ===");
+  console.log("Scramble string:", scramble);
 
-  const seq = [];
+  // Build start facelet from scramble moves using cubejs
+  const c = new Cube();
+  const applied = normalizeMoves(scramble);
+  if (applied) c.move(applied);
+  const startFacelet = c.asString();
 
-  // Repeat until all four white edges are solved
-  for (let i = 0; i < 30; i++) {
-    const edges = cubeState.getWhiteEdges();
-    const unsolved = edges.filter(e => !isCrossSolved(cubeState, e));
-    if (unsolved.length === 0) {
-      console.log("White cross solved, breaking loop.");
-      break;
-    }
-
-    const edge = unsolved[0];
-    console.log("Working on edge:", edge);
-
-    const moveSeq = solveEdge(cubeState, edge);
-    if (moveSeq) {
-      cubeState.apply(moveSeq);
-      seq.push(moveSeq);
-    }
+  if (isCrossSolvedString(startFacelet)) {
+    console.log("Cross already solved at start.");
+    return "";
   }
 
-  const out = optimizeMoves(normalizeMoves(seq.join(" ")));
-  console.log("Final cross moves:", out);
-  return out;
+  // Run search
+  const timeBudgetMs = 2000; // adjust if needed
+  const maxDepth = 9;
+  const seq = searchCrossFromFacelet(startFacelet, maxDepth, timeBudgetMs);
+
+  // Fallback if search fails
+  if (!seq || seq.length === 0) {
+    console.warn("Cross search failed or timed out. Applying safe fallback.");
+    const fallback = fallbackDaisyDown();
+    cubeState.apply(fallback);
+    console.log("Fallback cross moves:", fallback);
+    return optimizeMoves(normalizeMoves(fallback));
+  }
+
+  const moves = optimizeMoves(normalizeMoves(seq.join(" ")));
+  cubeState.apply(moves);
+  console.log("Final cross moves:", moves);
+  return moves;
 }
 
-/**
- * Choose algorithm based on orientation of the white sticker.
- */
-function solveEdge(cubeState, edge) {
-  const s = cubeState.toString();
-  const partner = edge.colors.find(c => c !== "U");
-
-  // Case A: white sticker on U face
-  if (edge.name.startsWith("U")) {
-    return alignAndFlipDown(cubeState, partner);
-  }
-
-  // Case B: white sticker on side face (middle layer)
-  if (["FR","FL","BR","BL"].includes(edge.name)) {
-    return "F U F'"; // lift to U, then handle as Case A next loop
-  }
-
-  // Case C: white sticker on D face but misaligned
-  if (edge.name.startsWith("D")) {
-    return "D"; // rotate D until aligned
-  }
-
-  return "";
-}
-
-/**
- * Rotate U until partner matches its center, then flip down with 180° turn.
- */
-function alignAndFlipDown(cubeState, partnerColor) {
-  const seq = [];
-
-  // Rotate U until partner matches its center
-  for (let j = 0; j < 4; j++) {
-    if (isAboveCenter(cubeState, partnerColor)) break;
-    cubeState.apply("U");
-    seq.push("U");
-  }
-
-  // Flip down
-  const face = faceForColor(cubeState, partnerColor);
-  if (face) {
-    seq.push(face + "2");
-  }
-
+function fallbackDaisyDown() {
+  // Beginner-friendly fallback to try to form a cross by flipping faces down
+  const seq = [
+    "U", "F2", "U", "R2", "U", "B2", "U", "L2",
+    "D", "F2", "D'", "R2", "U2", "B2", "L2",
+  ];
   return seq.join(" ");
-}
-
-/**
- * Map partner color to its face letter.
- */
-function faceForColor(cubeState, color) {
-  const centers = getCenters(cubeState);
-  for (const [face, c] of Object.entries(centers)) {
-    if (c === color) return face;
-  }
-  return null;
-}
-
-function getCenters(cubeState) {
-  const s = cubeState.toString();
-  const base = { U: 0, R: 9, F: 18, D: 27, L: 36, B: 45 };
-  return {
-    U: s[base.U + 4],
-    R: s[base.R + 4],
-    F: s[base.F + 4],
-    D: s[base.D + 4],
-    L: s[base.L + 4],
-    B: s[base.B + 4],
-  };
-}
-
-/**
- * Check if edge is solved in the cross.
- */
-function isCrossSolved(cubeState, edge) {
-  const s = cubeState.toString();
-  const base = { D: 27, R: 9, F: 18, L: 36, B: 45 };
-
-  if (edge.colors.includes("U") && edge.name.startsWith("D")) {
-    const other = edge.colors.find(c => c !== "U");
-    const face = edge.name[1]; // DF -> F, DR -> R, etc.
-    const centers = getCenters(cubeState);
-    const center = centers[face];
-    return other === center;
-  }
-  return false;
-}
-
-/**
- * Check if partner color is above its center on U face.
- */
-function isAboveCenter(cubeState, color) {
-  const centers = getCenters(cubeState);
-  return Object.values(centers).includes(color);
 }
