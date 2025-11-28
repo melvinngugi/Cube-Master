@@ -4,12 +4,12 @@ import dotenv from "dotenv";
 import authRoutes from "./src/routes/authRoutes.js";
 import solveRoutes from "./src/routes/solveRoutes.js";
 import solutionRoutes from "./src/routes/solutionRoutes.js";
+import algorithmRoutes from "./src/routes/algorithmRoutes.js"; // NEW
 import { getConnection } from "./src/db/oracle.js";
 
 dotenv.config();
 const app = express();
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 
@@ -17,6 +17,7 @@ app.use(express.json());
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/solves", solveRoutes);
 app.use("/api/v1", solutionRoutes);
+app.use("/api/v1", algorithmRoutes); // NEW
 
 // Test DB connection
 async function testDBConnection() {
