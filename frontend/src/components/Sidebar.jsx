@@ -125,7 +125,7 @@ export default function Sidebar({ solves = [], setDbSolvesExternal }) {
     : "00.00";
 
   return (
-    <div className="w-64 bg-[#6D7276] text-white flex flex-col justify-between p-3">
+    <div className="w-64 bg-[#6D7276] text-white h-screen sticky top-0 flex flex-col justify-between p-3">
       <div className="flex flex-col space-y-4 overflow-hidden flex-grow">
         <div>
           <img src="/logo.jpg" alt="Cube Master Logo" className="w-full mb-0" />

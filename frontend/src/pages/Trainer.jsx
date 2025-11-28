@@ -1,3 +1,4 @@
+// src/pages/Trainer.jsx
 import React, { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
 import TrainerHeader from "../components/TrainerHeader";
@@ -13,20 +14,20 @@ export default function Trainer() {
 
   useEffect(() => {
     fetch("/api/v1/algorithms?category=2LOOK_OLL")
-      .then(res => res.json())
-      .then(data => setTwoLookOll(data));
+      .then((res) => res.json())
+      .then((data) => setTwoLookOll(data));
 
     fetch("/api/v1/algorithms?category=2LOOK_PLL")
-      .then(res => res.json())
-      .then(data => setTwoLookPll(data));
+      .then((res) => res.json())
+      .then((data) => setTwoLookPll(data));
 
     fetch("/api/v1/algorithms?category=OLL")
-      .then(res => res.json())
-      .then(data => setOll(data));
+      .then((res) => res.json())
+      .then((data) => setOll(data));
 
     fetch("/api/v1/algorithms?category=PLL")
-      .then(res => res.json())
-      .then(data => setPll(data));
+      .then((res) => res.json())
+      .then((data) => setPll(data));
   }, []);
 
   const renderCards = (algos) =>
@@ -40,45 +41,57 @@ export default function Trainer() {
     ));
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex min-h-screen">
       {/* Left Sidebar */}
       <Sidebar />
 
-      {/* Main Content */}
+      {/* Main Content + Right Sidebar */}
       <div className="flex-1 flex flex-col">
         <TrainerHeader />
-        <div className="p-6 overflow-y-auto">
-          <img
-            src={notationImage}
-            alt="Notation Guide"
-            className="w-full max-w-4xl mx-auto mb-8 rounded-lg shadow"
-          />
 
-          {/* Sections in order */}
-          <section id="two-look-oll" className="mb-10">
-            <h2 className="text-xl font-semibold mb-4">2-Look OLL</h2>
-            <div className="flex flex-col space-y-4">{renderCards(twoLookOll)}</div>
-          </section>
+        <div className="flex flex-1 bg-[#B4B6B9]">
+          {/* Main scrollable content */}
+          <div className="p-6 overflow-y-auto flex-1">
+            <img
+              src={notationImage}
+              alt="Notation Guide"
+              className="w-full max-w-4xl mx-auto mb-8 rounded-lg shadow"
+            />
 
-          <section id="two-look-pll" className="mb-10">
-            <h2 className="text-xl font-semibold mb-4">2-Look PLL</h2>
-            <div className="flex flex-col space-y-4">{renderCards(twoLookPll)}</div>
-          </section>
+            {/* Sections */}
+            <section id="two-look-oll" className="mb-10">
+              <h2 className="text-xl font-semibold mb-4">2-Look OLL</h2>
+              <div className="grid [grid-template-columns:repeat(auto-fit,minmax(340px,1fr))] gap-6">
+                {renderCards(twoLookOll)}
+              </div>
+            </section>
 
-          <section id="oll" className="mb-10">
-            <h2 className="text-xl font-semibold mb-4">OLL</h2>
-            <div className="flex flex-col space-y-4">{renderCards(oll)}</div>
-          </section>
+            <section id="two-look-pll" className="mb-10">
+              <h2 className="text-xl font-semibold mb-4">2-Look PLL</h2>
+              <div className="grid [grid-template-columns:repeat(auto-fit,minmax(340px,1fr))] gap-6">
+                {renderCards(twoLookPll)}
+              </div>
+            </section>
 
-          <section id="pll" className="mb-10">
-            <h2 className="text-xl font-semibold mb-4">PLL</h2>
-            <div className="flex flex-col space-y-4">{renderCards(pll)}</div>
-          </section>
+            <section id="oll" className="mb-10">
+              <h2 className="text-xl font-semibold mb-4">OLL</h2>
+              <div className="grid [grid-template-columns:repeat(auto-fit,minmax(340px,1fr))] gap-6">
+                {renderCards(oll)}
+              </div>
+            </section>
+
+            <section id="pll" className="mb-10">
+              <h2 className="text-xl font-semibold mb-4">PLL</h2>
+              <div className="grid [grid-template-columns:repeat(auto-fit,minmax(340px,1fr))] gap-6">
+                {renderCards(pll)}
+              </div>
+            </section>
+          </div>
+
+          {/* Right Sidebar */}
+          <RightSidebar />
         </div>
       </div>
-
-      {/* Right Sidebar */}
-      <RightSidebar />
     </div>
   );
 }

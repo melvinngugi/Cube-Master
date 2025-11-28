@@ -1,3 +1,4 @@
+// src/components/RightSidebar.jsx
 import React, { useState } from "react";
 
 export default function RightSidebar() {
@@ -12,12 +13,12 @@ export default function RightSidebar() {
   };
 
   return (
-    <div className="w-64 bg-white shadow-lg p-4 flex flex-col">
+    <div className="w-64 bg-[#6D7276] text-white p-4 shadow-lg sticky top-0 h-screen">
       {/* Beginner Dropdown */}
       <div>
         <button
           onClick={() => setOpenBeginner(!openBeginner)}
-          className="w-full text-left font-semibold text-gray-800 mb-2"
+          className="w-full text-left font-semibold mb-2"
         >
           Beginner
         </button>
@@ -25,13 +26,13 @@ export default function RightSidebar() {
           <div className="ml-4 flex flex-col space-y-2">
             <button
               onClick={() => scrollToSection("two-look-oll")}
-              className="text-sm text-gray-600 hover:text-gray-900"
+              className="text-sm hover:text-gray-200 text-left"
             >
               2-Look OLL
             </button>
             <button
               onClick={() => scrollToSection("two-look-pll")}
-              className="text-sm text-gray-600 hover:text-gray-900"
+              className="text-sm hover:text-gray-200 text-left"
             >
               2-Look PLL
             </button>
@@ -43,7 +44,7 @@ export default function RightSidebar() {
       <div className="mt-6">
         <button
           onClick={() => setOpenAdvanced(!openAdvanced)}
-          className="w-full text-left font-semibold text-gray-800 mb-2"
+          className="w-full text-left font-semibold mb-2"
         >
           Advanced
         </button>
@@ -51,13 +52,13 @@ export default function RightSidebar() {
           <div className="ml-4 flex flex-col space-y-2">
             <button
               onClick={() => scrollToSection("oll")}
-              className="text-sm text-gray-600 hover:text-gray-900"
+              className="text-sm hover:text-gray-200 text-left"
             >
               OLL
             </button>
             <button
               onClick={() => scrollToSection("pll")}
-              className="text-sm text-gray-600 hover:text-gray-900"
+              className="text-sm hover:text-gray-200 text-left"
             >
               PLL
             </button>
