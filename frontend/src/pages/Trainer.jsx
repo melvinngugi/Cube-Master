@@ -19,10 +19,11 @@ export default function Trainer() {
   }, []);
 
   const renderCards = (algos) =>
-    algos.map(({ ALGORITHM_ID, MOVE_SEQUENCE }) => (
+    algos.map(({ ALGORITHM_ID, NAME, MOVE_SEQUENCE }) => (
       <AlgorithmCard
         key={ALGORITHM_ID}
         imageSrc={`/src/images/${ALGORITHM_ID}.png`}
+        name={NAME}
         algorithm={MOVE_SEQUENCE}
       />
     ));
