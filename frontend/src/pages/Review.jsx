@@ -26,14 +26,16 @@ export default function ReviewPage() {
         console.log("Raw solves from API:", data.solves[0]);
 
         if (Array.isArray(data.solves)) {
-          //Normalize DB fields to camelCase
+          // Normalize DB fields to camelCase
           const normalized = data.solves.map((s) => ({
             solve_id: s.SOLVE_ID,
             scramble_text: s.SCRAMBLE_TEXT,
             timestamp: s.TIMESTAMP,
             solve_time: s.SOLVE_TIME,
-            beginner_generated_solution: s.BEGINNER_GENERATED_SOLUTION,
-            advanced_generated_solution: s.ADVANCED_GENERATED_SOLUTION,
+            beginner_solution: s.BEGINNER_GENERATED_CROSS,
+            xcross_solution: s.XCROSS_GENERATED_CROSS,
+            xxcross_solution: s.XXCROSS_GENERATED_CROSS,
+            xxxcross_solution: s.XXXCROSS_GENERATED_CROSS,
           }));
 
           setSolves(normalized);
@@ -70,8 +72,10 @@ export default function ReviewPage() {
               onSelect={handleSelect}
             />
             <SolutionBar
-              beginnerSolution={selectedSolve?.beginner_generated_solution}
-              advancedSolution={selectedSolve?.advanced_generated_solution}
+              beginnerSolution={selectedSolve?.beginner_solution}
+              xcrossSolution={selectedSolve?.xcross_solution}
+              xxcrossSolution={selectedSolve?.xxcross_solution}
+              xxxcrossSolution={selectedSolve?.xxxcross_solution}
             />
           </div>
 
