@@ -506,8 +506,11 @@ var cross = (function(createMove, edgeMove, createPrun, setNPerm, getNPerm, Cnk,
 	return {
 		solve: solve_cross,
 		getEasyCross: getEasyCross,
-		getEasyXCross: getEasyXCross
-	}
+		getEasyXCross: getEasyXCross,
+		solveXCross: solve_xcross,
+		solveXXCross: solve_xxcross,
+		solveXXXCross: (moves, face) => solve_xxcross(moves, face, true),
+	};
 })(mathlib.createMove, mathlib.edgeMove, mathlib.createPrun, mathlib.setNPerm, mathlib.getNPerm, mathlib.Cnk, mathlib.getPruning);
 
 export default cross;
