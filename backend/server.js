@@ -7,6 +7,7 @@ import solutionRoutes from "./src/routes/solutionRoutes.js";
 import algorithmRoutes from "./src/routes/algorithmRoutes.js"; // NEW
 import { getConnection } from "./src/db/oracle.js";
 import progressRoutes from "./src/routes/progressRoutes.js";
+import backfillRoutes from "./src/routes/backfillRoutes.js";
 
 dotenv.config();
 const app = express();
@@ -20,6 +21,7 @@ app.use("/api/v1/solves", solveRoutes);
 app.use("/api/v1", solutionRoutes);
 app.use("/api/v1", algorithmRoutes);
 app.use("/api/v1", progressRoutes);
+app.use("/api/v1", backfillRoutes);
 
 // Test DB connection
 async function testDBConnection() {
