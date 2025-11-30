@@ -1,3 +1,4 @@
+// backend/src/routes/authRoutes.js
 import express from "express";
 import { signup, login, getProfile } from "../controllers/authController.js";
 import { protect } from "../middleware/authMiddleware.js";

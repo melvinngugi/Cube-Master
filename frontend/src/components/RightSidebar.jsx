@@ -1,7 +1,14 @@
 // src/components/RightSidebar.jsx
 import React, { useState } from "react";
+import ProgressBar from "./ProgressBar";
 
-export default function RightSidebar() {
+export default function RightSidebar({
+  twoLookOll = [],
+  twoLookPll = [],
+  oll = [],
+  pll = [],
+  progress = [],
+}) {
   const [openBeginner, setOpenBeginner] = useState(true);
   const [openAdvanced, setOpenAdvanced] = useState(false);
 
@@ -12,8 +19,13 @@ export default function RightSidebar() {
     }
   };
 
+  const countByCategory = (category, status) =>
+    progress.filter(
+      (p) => p.STATUS === status && p.CATEGORY === category
+    ).length;
+
   return (
-    <div className="w-64 bg-[#6D7276] text-white p-4 shadow-lg sticky top-0 h-screen">
+    <div className="w-64 bg-[#6D7276] text-white p-4 shadow-lg sticky top-0 h-screen overflow-y-auto">
       {/* Beginner Dropdown */}
       <div>
         <button
@@ -40,6 +52,22 @@ export default function RightSidebar() {
         )}
       </div>
 
+      {/* Progress bars for Beginner */}
+      <div className="mt-4 space-y-4">
+        <ProgressBar
+          label="2-Look OLL Progress"
+          total={twoLookOll.length}
+          learningCount={countByCategory("2LOOK_OLL", "LEARNING")}
+          learnedCount={countByCategory("2LOOK_OLL", "LEARNED")}
+        />
+        <ProgressBar
+          label="2-Look PLL Progress"
+          total={twoLookPll.length}
+          learningCount={countByCategory("2LOOK_PLL", "LEARNING")}
+          learnedCount={countByCategory("2LOOK_PLL", "LEARNED")}
+        />
+      </div>
+
       {/* Advanced Dropdown */}
       <div className="mt-6">
         <button
@@ -64,6 +92,22 @@ export default function RightSidebar() {
             </button>
           </div>
         )}
+      </div>
+
+      {/* Progress bars for Advanced */}
+      <div className="mt-4 space-y-4">
+        <ProgressBar
+          label="OLL Progress"
+          total={oll.length}
+          learningCount={countByCategory("OLL", "LEARNING")}
+          learnedCount={countByCategory("OLL", "LEARNED")}
+        />
+        <ProgressBar
+          label="PLL Progress"
+          total={pll.length}
+          learningCount={countByCategory("PLL", "LEARNING")}
+          learnedCount={countByCategory("PLL", "LEARNED")}
+        />
       </div>
     </div>
   );

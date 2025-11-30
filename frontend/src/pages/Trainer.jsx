@@ -1,4 +1,3 @@
-// src/pages/Trainer.jsx
 import React, { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
 import TrainerHeader from "../components/TrainerHeader";
@@ -7,28 +6,58 @@ import RightSidebar from "../components/RightSidebar";
 import notationImage from "../images/notation.png";
 
 export default function Trainer() {
+  const [userId, setUserId] = useState(null);
   const [twoLookOll, setTwoLookOll] = useState([]);
   const [twoLookPll, setTwoLookPll] = useState([]);
   const [oll, setOll] = useState([]);
   const [pll, setPll] = useState([]);
+  const [progress, setProgress] = useState([]);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    fetch("/api/v1/auth/profile", {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Unauthorized");
+        return res.json();
+      })
+      .then((data) => setUserId(data.user.id))
+      .catch((err) => console.error(err));
+  }, []);
 
   useEffect(() => {
     fetch("/api/v1/algorithms?category=2LOOK_OLL")
       .then((res) => res.json())
-      .then((data) => setTwoLookOll(data));
+      .then(setTwoLookOll);
 
     fetch("/api/v1/algorithms?category=2LOOK_PLL")
       .then((res) => res.json())
-      .then((data) => setTwoLookPll(data));
+      .then(setTwoLookPll);
 
     fetch("/api/v1/algorithms?category=OLL")
       .then((res) => res.json())
-      .then((data) => setOll(data));
+      .then(setOll);
 
     fetch("/api/v1/algorithms?category=PLL")
       .then((res) => res.json())
-      .then((data) => setPll(data));
+      .then(setPll);
   }, []);
+
+  useEffect(() => {
+    if (userId) {
+      fetch(`/api/v1/progress?userId=${userId}`)
+        .then((res) => res.json())
+        .then(setProgress);
+    }
+  }, [userId]);
+
+  const getStatus = (algorithmId) => {
+    const entry = progress.find((p) => p.ALGORITHM_ID === algorithmId);
+    return entry ? entry.STATUS : "NONE";
+  };
 
   const renderCards = (algos) =>
     algos.map(({ ALGORITHM_ID, NAME, MOVE_SEQUENCE }) => (
@@ -37,20 +66,23 @@ export default function Trainer() {
         imageSrc={`/src/images/${ALGORITHM_ID}.png`}
         name={NAME}
         algorithm={MOVE_SEQUENCE}
+        userId={userId}
+        algorithmId={ALGORITHM_ID}
+        initialStatus={getStatus(ALGORITHM_ID)}
+        onStatusChange={() => {
+          fetch(`/api/v1/progress?userId=${userId}`)
+            .then((res) => res.json())
+            .then(setProgress);
+        }}
       />
     ));
 
   return (
     <div className="flex min-h-screen">
-      {/* Left Sidebar */}
       <Sidebar />
-
-      {/* Main Content + Right Sidebar */}
       <div className="flex-1 flex flex-col">
         <TrainerHeader />
-
         <div className="flex flex-1 bg-[#B4B6B9]">
-          {/* Main scrollable content */}
           <div className="p-6 overflow-y-auto flex-1">
             <img
               src={notationImage}
@@ -58,7 +90,6 @@ export default function Trainer() {
               className="w-full max-w-4xl mx-auto mb-8 rounded-lg shadow"
             />
 
-            {/* Sections */}
             <section id="two-look-oll" className="mb-10">
               <h2 className="text-xl font-semibold mb-4">2-Look OLL</h2>
               <div className="grid [grid-template-columns:repeat(auto-fit,minmax(340px,1fr))] gap-6">
@@ -88,8 +119,13 @@ export default function Trainer() {
             </section>
           </div>
 
-          {/* Right Sidebar */}
-          <RightSidebar />
+          <RightSidebar
+            twoLookOll={twoLookOll}
+            twoLookPll={twoLookPll}
+            oll={oll}
+            pll={pll}
+            progress={progress}
+          />
         </div>
       </div>
     </div>
