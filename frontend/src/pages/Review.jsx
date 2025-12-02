@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useAuth } from "../context/AuthContext";
 import ScrambleBar from "../components/ScrambleBar";
 import Sidebar from "../components/Sidebar";
@@ -13,6 +13,11 @@ export default function ReviewPage() {
   const [selectedSolve, setSelectedSolve] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  // cube filter state
+  const [eventId, setEventId] = useState("333"); // default 3x3
+  const cubeMap = { "333": 1, "222": 2, pyram: 3 };
+  const activeCubeId = cubeMap[eventId] ?? 1;
+
   useEffect(() => {
     const fetchSolves = async () => {
       if (!user || !token) return;
@@ -22,8 +27,6 @@ export default function ReviewPage() {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
-
-        console.log("Raw solves from API:", data.solves[0]);
 
         if (Array.isArray(data.solves)) {
           // Normalize DB fields to camelCase
@@ -36,6 +39,7 @@ export default function ReviewPage() {
             xcross_solution: s.XCROSS_GENERATED_CROSS,
             xxcross_solution: s.XXCROSS_GENERATED_CROSS,
             xxxcross_solution: s.XXXCROSS_GENERATED_CROSS,
+            cube_id: s.CUBE_ID,
           }));
 
           setSolves(normalized);
@@ -50,39 +54,59 @@ export default function ReviewPage() {
     fetchSolves();
   }, [user, token]);
 
+  // Filter solves by cube type
+  const filteredSolves = useMemo(
+    () => solves.filter((s) => s.cube_id === activeCubeId),
+    [solves, activeCubeId]
+  );
+
   const handleSelect = (solve) => setSelectedSolve(solve);
+
+  // Determine if we should show solution bar (only for 3x3)
+  const showSolutions = eventId === "333";
 
   return (
     <div className="flex h-screen bg-[#B4B6B9]">
       {/* Sidebar */}
-      <Sidebar solves={solves} user={user} isAuthenticated={!!token} />
+      <Sidebar
+        solves={filteredSolves}
+        user={user}
+        isAuthenticated={!!token}
+        eventId={eventId}
+      />
 
       {/* Main content */}
       <div className="flex flex-col flex-1 relative">
-        {/* Scramble bar */}
-        <ScrambleBar scramble={selectedSolve?.scramble_text} eventId="333" />
+        {/* Scramble bar with dropdown */}
+        <ScrambleBar
+          scramble={selectedSolve?.scramble_text}
+          eventId={eventId}
+          setEventId={setEventId}
+        />
 
         {/* Middle and right sections */}
         <div className="flex flex-1 overflow-hidden mt-24">
           {/* Middle: solve list + solutions */}
           <div className="flex flex-col w-2/3 px-6 py-4 space-y-4 overflow-y-auto">
             <SolveGrid
-              solves={solves}
+              solves={filteredSolves}
               selectedId={selectedSolve?.solve_id}
               onSelect={handleSelect}
             />
-            <SolutionBar
-              beginnerSolution={selectedSolve?.beginner_solution}
-              xcrossSolution={selectedSolve?.xcross_solution}
-              xxcrossSolution={selectedSolve?.xxcross_solution}
-              xxxcrossSolution={selectedSolve?.xxxcross_solution}
-            />
+            {showSolutions && selectedSolve && (
+              <SolutionBar
+                beginnerSolution={selectedSolve?.beginner_solution}
+                xcrossSolution={selectedSolve?.xcross_solution}
+                xxcrossSolution={selectedSolve?.xxcross_solution}
+                xxxcrossSolution={selectedSolve?.xxxcross_solution}
+              />
+            )}
           </div>
 
           {/* Right: cube preview + chart */}
           <div className="w-1/3 px-4 py-4 flex flex-col items-center space-y-4">
-            <CubePreview scramble={selectedSolve?.scramble_text} />
-            <PerformanceChart solves={solves} />
+            <CubePreview scramble={selectedSolve?.scramble_text} eventId={eventId} />
+            <PerformanceChart solves={filteredSolves} />
           </div>
         </div>
 

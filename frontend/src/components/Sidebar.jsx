@@ -5,7 +5,7 @@ import LogoutConfirm from "./LogoutConfirm";
 import ProfileModal from "./ProfileModal";
 import { useNavigate } from "react-router-dom";
 
-export default function Sidebar({ solves = [], setDbSolvesExternal }) {
+export default function Sidebar({ solves = [], setDbSolvesExternal, eventId }) {
   const { user, token } = useAuth();
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -21,18 +21,14 @@ export default function Sidebar({ solves = [], setDbSolvesExternal }) {
     if (!setDbSolvesExternal) return;
 
     const helpers = {
-      addSolve: (newSolve) =>
-        setDbSolves((prev) => [newSolve, ...prev]),
-
+      addSolve: (newSolve) => setDbSolves((prev) => [newSolve, ...prev]),
       editSolve: (updatedSolve) =>
         setDbSolves((prev) =>
           prev.map((s) =>
             s.solve_id === updatedSolve.solve_id ? updatedSolve : s
           )
         ),
-
-      replaceAll: (solvesArr) =>
-        setDbSolves(solvesArr),
+      replaceAll: (solvesArr) => setDbSolves(solvesArr),
     };
 
     setDbSolvesExternal(helpers);
@@ -55,6 +51,7 @@ export default function Sidebar({ solves = [], setDbSolvesExternal }) {
             scramble_text: s.SCRAMBLE_TEXT,
             timestamp: s.TIMESTAMP,
             solve_time: s.SOLVE_TIME,
+            cube_id: s.CUBE_ID ?? 1, // include cube_id, default to 1 (3x3) if missing
           }));
 
           setDbSolves(normalized);
@@ -67,25 +64,37 @@ export default function Sidebar({ solves = [], setDbSolvesExternal }) {
     fetchSolves();
   }, [user, token]);
 
-  // Time formatter
+  // Time formatter (expects milliseconds)
   const format = (ms) => {
-    if (typeof ms !== "number") return "--.--";
+    if (typeof ms !== "number" || Number.isNaN(ms)) return "--.--";
     const sec = Math.floor(ms / 1000);
     const dec = Math.floor((ms % 1000) / 10);
     return `${sec}.${dec.toString().padStart(2, "0")}`;
   };
 
-  // Select which solves to display
+  // Map eventId → cube_id
+  const cubeMap = { "333": 1, "222": 2, pyram: 3 };
+  const activeCubeId = cubeMap[eventId] ?? 1;
+
+  // Select which solves to display (filter by cube type)
   const displaySolves = useMemo(() => {
-    if (!user) return solves;
+    if (!user) {
+      // guest mode: parent "solves" should include cube_id
+      return solves
+        .filter((s) => s.cube_id === activeCubeId)
+        .map((s) =>
+          typeof s.solve_time === "number" ? s.solve_time : Number(s.solve_time)
+        )
+        .filter((n) => !Number.isNaN(n));
+    }
 
     return dbSolves
-      .map((s) => {
-        const raw = s.solve_time;
-        return typeof raw === "number" ? raw : Number(raw);
-      })
-      .filter((n) => !isNaN(n));
-  }, [dbSolves, solves, user]);
+      .filter((s) => s.cube_id === activeCubeId)
+      .map((s) =>
+        typeof s.solve_time === "number" ? s.solve_time : Number(s.solve_time)
+      )
+      .filter((n) => !Number.isNaN(n));
+  }, [dbSolves, solves, user, activeCubeId]);
 
   // Averages helpers
   const rawAvg = (arr) =>
@@ -100,7 +109,7 @@ export default function Sidebar({ solves = [], setDbSolvesExternal }) {
           Math.min(
             ...displaySolves
               .map((_, i) => rawAvg(displaySolves.slice(i, i + 5)))
-              .filter((v) => v !== null && !isNaN(v))
+              .filter((v) => v !== null && !Number.isNaN(v))
           )
         )
       : "--";
@@ -111,7 +120,7 @@ export default function Sidebar({ solves = [], setDbSolvesExternal }) {
           Math.min(
             ...displaySolves
               .map((_, i) => rawAvg(displaySolves.slice(i, i + 12)))
-              .filter((v) => v !== null && !isNaN(v))
+              .filter((v) => v !== null && !Number.isNaN(v))
           )
         )
       : "--";
@@ -123,6 +132,10 @@ export default function Sidebar({ solves = [], setDbSolvesExternal }) {
   const currentSingle = displaySolves.length
     ? format(displaySolves[0])
     : "00.00";
+
+  // Current cube type label
+  const cubeLabel =
+    eventId === "333" ? "3×3×3" : eventId === "222" ? "2×2×2" : "Pyraminx";
 
   return (
     <div className="w-64 bg-[#6D7276] text-white h-screen sticky top-0 flex flex-col justify-between p-3">
@@ -152,10 +165,15 @@ export default function Sidebar({ solves = [], setDbSolvesExternal }) {
           </div>
         </div>
 
+        {/* Stats */}
         <div
           className="bg-[#B3B3B3] text-black p-2 rounded-lg"
           style={{ fontFamily: "'Share Tech Mono', monospace" }}
         >
+          <div className="flex items-center justify-between mb-2 text-xs">
+            <span className="font-semibold">Showing:</span>
+            <span className="px-2 py-0.5 rounded bg-[#D9D9D9]">{cubeLabel}</span>
+          </div>
           <div className="grid grid-cols-3 gap-1 text-sm">
             <div></div>
             <div className="font-bold">current</div>
@@ -175,6 +193,7 @@ export default function Sidebar({ solves = [], setDbSolvesExternal }) {
           </div>
         </div>
 
+        {/* Solve list */}
         <div
           className="bg-[#B3B3B3] text-black p-2 overflow-y-auto rounded-lg flex-1"
           style={{ fontFamily: "'Share Tech Mono', monospace" }}
@@ -221,6 +240,7 @@ export default function Sidebar({ solves = [], setDbSolvesExternal }) {
         </div>
       </div>
 
+      {/* Footer */}
       <div className="flex justify-between items-center pt-3">
         <button
           className="text-white"
@@ -228,21 +248,43 @@ export default function Sidebar({ solves = [], setDbSolvesExternal }) {
             if (user) setShowProfileModal(true);
             else setShowLoginModal(true);
           }}
+          title={user ? "Profile" : "Login"}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-            strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-            <path strokeLinecap="round" strokeLinejoin="round"
+          {/* Profile icon */}
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+            className="w-5 h-5"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
               d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
             />
           </svg>
         </button>
 
         {user && (
-          <button className="text-white" onClick={() => setShowLogoutConfirm(true)}>
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none"
-              viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"
-              className="w-5 h-5">
-              <path strokeLinecap="round" strokeLinejoin="round"
+          <button
+            className="text-white"
+            onClick={() => setShowLogoutConfirm(true)}
+            title="Logout"
+          >
+            {/* Logout icon */}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="w-5 h-5"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
                 d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9"
               />
             </svg>

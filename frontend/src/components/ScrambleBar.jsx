@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 
-export default function ScrambleBar({ scramble, setScramble, eventId }) {
-  // Only fetch scramble if setScramble and eventId are provided
+export default function ScrambleBar({ scramble, setScramble, eventId, setEventId }) {
+  // Fetch scramble whenever eventId changes
   useEffect(() => {
     if (setScramble && eventId) {
       window.getWcaScramble(eventId).then(setScramble);
@@ -10,23 +10,25 @@ export default function ScrambleBar({ scramble, setScramble, eventId }) {
 
   return (
     <div className="bg-[#6D7276] text-white px-6 py-6 sm:px-4 sm:py-3 w-full z-10">
-      {/* Show dropdown only if eventId is provided */}
       {eventId && (
         <div className="flex justify-between items-center mb-4 sm:mb-2">
           <select
             className="bg-[#B4B6B9] text-black px-2 py-1 rounded text-sm sm:text-xs"
             value={eventId}
             onChange={(e) => {
-              // If interactive, reset scramble
-              if (setScramble) setScramble("");
+              const newEventId = e.target.value;
+              setEventId(newEventId); // ✅ update cube type
+              if (setScramble) {
+                // fetch a scramble immediately for the new cube
+                window.getWcaScramble(newEventId).then(setScramble);
+              }
             }}
           >
             <option value="333">3×3×3</option>
             <option value="222">2×2×2</option>
-            <option value="pyraminx">Pyraminx</option>
+            <option value="pyram">Pyraminx</option> {/* ✅ use pyram */}
           </select>
 
-          {/* Only show next/previous if setScramble is provided (Timer page) */}
           {setScramble && (
             <div className="space-x-4 text-sm sm:text-xs">
               <button
@@ -46,7 +48,6 @@ export default function ScrambleBar({ scramble, setScramble, eventId }) {
         </div>
       )}
 
-      {/* Scramble text — same size as Timer page */}
       <div className="text-4xl sm:text-2xl font-mono text-center leading-tight break-words">
         {scramble || "No scramble selected"}
       </div>

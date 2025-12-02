@@ -1,13 +1,25 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
-export default function CubePreview({ scramble }) {
+export default function CubePreview({ scramble, eventId }) {
   const twistyRef = useRef(null);
 
   useEffect(() => {
-    if (twistyRef.current && scramble) {
-      twistyRef.current.setAttribute("alg", scramble);
+    if (twistyRef.current) {
+      // Always set puzzle type when eventId changes
+      if (eventId === "333") {
+        twistyRef.current.setAttribute("puzzle", "3x3x3");
+      } else if (eventId === "222") {
+        twistyRef.current.setAttribute("puzzle", "2x2x2");
+      } else if (eventId === "pyram") {
+        twistyRef.current.setAttribute("puzzle", "pyraminx");
+      }
+
+      // Set scramble if available
+      if (scramble) {
+        twistyRef.current.setAttribute("alg", scramble);
+      }
     }
-  }, [scramble]);
+  }, [scramble, eventId]);
 
   return (
     <div className="p-2">

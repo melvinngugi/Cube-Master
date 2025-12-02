@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import useTimer from "../hooks/useTimer";
 import ScrambleBar from "../components/ScrambleBar";
 import CubePreview from "../components/CubePreview";
@@ -9,7 +9,7 @@ import { useAuth } from "../context/AuthContext";
 export default function TimerDashboard() {
   const { user, token } = useAuth();
   const [scramble, setScramble] = useState("");
-  const [eventId, setEventId] = useState("333");
+  const [eventId, setEventId] = useState("333"); // default cube type
   const [focusMode, setFocusMode] = useState(false);
 
   // Sidebar helper functions (addSolve, editSolve, replaceAll)
@@ -25,7 +25,17 @@ export default function TimerDashboard() {
   const handleSolveSaved = async (newSolve) => {
     if (!user || !token) return;
 
+    // Map eventId → CUBE_ID in DB
+    const cubeMap = { "333": 1, "222": 2, pyram: 3 };
+    const cubeId = cubeMap[eventId] ?? 1;
+
     try {
+      // Only attach generated solutions for 3×3
+      const beginnerSolution =
+        eventId === "333" ? newSolve.beginner_generated_solution ?? null : null;
+      const advancedSolution =
+        eventId === "333" ? newSolve.advanced_generated_solution ?? null : null;
+
       const res = await fetch("/api/v1/solves", {
         method: "POST",
         headers: {
@@ -36,18 +46,22 @@ export default function TimerDashboard() {
           user_id: user.id,
           scramble_text: newSolve.scramble_text,
           solve_time: newSolve.solve_time,
-          beginner_generated_solution: null,
-          advanced_generated_solution: null,
+          cube_id: cubeId, // always send cube_id
+          beginner_generated_solution: beginnerSolution,
+          advanced_generated_solution: advancedSolution,
         }),
       });
 
       const data = await res.json();
 
       if (res.ok) {
-        // Update sidebar instantly
+        // Update sidebar instantly with cube_id
         sidebarHelpers?.addSolve?.({
           ...newSolve,
           solve_id: data.solve_id ?? undefined,
+          cube_id: cubeId,
+          beginner_generated_solution: beginnerSolution,
+          advanced_generated_solution: advancedSolution,
         });
       } else {
         console.error("Failed to save solve:", data);
@@ -61,10 +75,11 @@ export default function TimerDashboard() {
     <div className="flex h-screen bg-[#B4B6B9]">
       {!focusMode && (
         <Sidebar
-          solves={solves} // current local solves
+          solves={solves}
           user={user}
           isAuthenticated={!!token}
-          setDbSolvesExternal={setSidebarHelpers} // capture helpers
+          setDbSolvesExternal={setSidebarHelpers}
+          eventId={eventId} // pass current cube type for filtering
         />
       )}
 
@@ -74,6 +89,7 @@ export default function TimerDashboard() {
             scramble={scramble}
             setScramble={setScramble}
             eventId={eventId}
+            setEventId={setEventId} // pass setter to dropdown
           />
         )}
 
@@ -86,13 +102,13 @@ export default function TimerDashboard() {
             running={running}
             focusMode={focusMode}
             scramble={scramble}
-            onSolveSaved={handleSolveSaved} // parent handles DB insert
+            onSolveSaved={handleSolveSaved}
           />
         </div>
 
         {!focusMode && (
           <div className="absolute bottom-6 right-6">
-            <CubePreview scramble={scramble} />
+            <CubePreview scramble={scramble} eventId={eventId} />
           </div>
         )}
       </div>
