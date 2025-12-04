@@ -183,7 +183,7 @@ export default function ReviewPage() {
           setEventId={setEventId}
         />
 
-        <div className="flex flex-1 overflow-hidden mt-24">
+        <div className="flex flex-1 overflow-hidden mt-0">
           <div className="flex flex-col w-2/3 px-6 py-4 space-y-4 overflow-y-auto">
             <SolveGrid
               solves={filteredSolves}
