@@ -3,18 +3,11 @@ import { formatMsToSecDeci } from "../utils/format";
 function normalizeTimeToMs(raw) {
   const n = Number(raw);
   if (Number.isNaN(n)) return NaN;
-
   const hasDecimal = String(raw).includes(".");
-
-  // Heuristics:
-  // - Values >= 1000 are almost certainly milliseconds
-  // - Values between 0 and 60 with a decimal are usually seconds (e.g., 4.67, 0.47) → convert to ms
-  // - Small integers < 60 can be seconds (e.g., 7) → convert to ms
-  // - Otherwise, assume milliseconds
-  if (n >= 1000) return n;                // ms
-  if (n > 0 && n <= 60 && hasDecimal) return n * 1000; // seconds → ms
-  if (n > 0 && n <= 60 && !hasDecimal) return n * 1000; // seconds → ms
-  return n;                                // fallback: ms
+  if (n >= 1000) return n;
+  if (n > 0 && n <= 60 && hasDecimal) return n * 1000;
+  if (n > 0 && n <= 60 && !hasDecimal) return n * 1000;
+  return n;
 }
 
 export default function SolveGrid({ solves, selectedId, onSelect }) {
@@ -25,7 +18,6 @@ export default function SolveGrid({ solves, selectedId, onSelect }) {
       ) : (
         solves.map((solve, index) => {
           const timeMs = normalizeTimeToMs(solve.solve_time);
-
           const displayTime = Number.isNaN(timeMs)
             ? "00.00"
             : formatMsToSecDeci(timeMs);
@@ -56,6 +48,7 @@ export default function SolveGrid({ solves, selectedId, onSelect }) {
               <div className="flex-1 flex items-center justify-center w-full">
                 <span className="text-xl font-bold text-black">
                   {displayTime}
+                  {solve.plus_two ? "+" : ""}
                 </span>
               </div>
             </button>

@@ -14,12 +14,10 @@ export default function ReviewPage() {
   const [selectedSolve, setSelectedSolve] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // cube filter state
-  const [eventId, setEventId] = useState("333"); // default 3x3
+  const [eventId, setEventId] = useState("333");
   const cubeMap = { "333": 1, "222": 2, pyram: 3 };
   const activeCubeId = cubeMap[eventId] ?? 1;
 
-  // modal state
   const [showModal, setShowModal] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -38,12 +36,13 @@ export default function ReviewPage() {
             solve_id: s.SOLVE_ID,
             scramble_text: s.SCRAMBLE_TEXT,
             timestamp: s.TIMESTAMP,
-            solve_time: s.SOLVE_TIME,
+            solve_time: Number(s.SOLVE_TIME),
             beginner_solution: s.BEGINNER_GENERATED_CROSS,
             xcross_solution: s.XCROSS_GENERATED_CROSS,
             xxcross_solution: s.XXCROSS_GENERATED_CROSS,
             xxxcross_solution: s.XXXCROSS_GENERATED_CROSS,
             cube_id: s.CUBE_ID,
+            plus_two: s.PLUS_TWO === 1,
           }));
 
           setSolves(normalized);
@@ -89,7 +88,7 @@ export default function ReviewPage() {
       const data = await res.json();
       if (res.ok) {
         const newSolve = {
-          solve_id: data.solve_id,
+          solve_id: data.solveId,
           scramble_text: scramble,
           solve_time: time * 1000,
           timestamp: new Date().toISOString(),
@@ -98,6 +97,7 @@ export default function ReviewPage() {
           xxcross_solution: data.solutions?.xxcross ?? null,
           xxxcross_solution: data.solutions?.xxxcross ?? null,
           cube_id: cubeId,
+          plus_two: false,
         };
         setSolves((prev) => [newSolve, ...prev]);
         setSelectedSolve(newSolve);
@@ -109,6 +109,61 @@ export default function ReviewPage() {
     } finally {
       setSaving(false);
       setShowModal(false);
+    }
+  };
+
+  // Toggle +2 penalty handler
+  const handlePlusTwo = async () => {
+    if (!selectedSolve || !token) return;
+    try {
+      const res = await fetch(`/api/v1/solves/${selectedSolve.solve_id}/plus2`, {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (res.ok) {
+        const newTime = Number(data.newTime);
+        const newPlusTwo = data.plus_two === 1;
+
+        const updated = {
+          ...selectedSolve,
+          solve_time: newTime,
+          plus_two: newPlusTwo,
+        };
+
+        setSolves((prev) =>
+          prev.map((s) => (s.solve_id === updated.solve_id ? updated : s))
+        );
+        setSelectedSolve(updated);
+      } else {
+        console.error("Toggle +2 failed:", data);
+      }
+    } catch (err) {
+      console.error("Error toggling +2:", err);
+    }
+  };
+
+  // Delete handler with confirmation
+  const handleDelete = async () => {
+    if (!selectedSolve || !token) return;
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this solve?"
+    );
+    if (!confirmDelete) return;
+
+    try {
+      const res = await fetch(`/api/v1/solves/${selectedSolve.solve_id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        setSolves((prev) =>
+          prev.filter((s) => s.solve_id !== selectedSolve.solve_id)
+        );
+        setSelectedSolve(null);
+      }
+    } catch (err) {
+      console.error("Error deleting solve:", err);
     }
   };
 
@@ -147,13 +202,40 @@ export default function ReviewPage() {
 
           {/* Right side */}
           <div className="w-1/3 px-4 py-4 flex flex-col items-center space-y-4">
-            {/* Add Time button above cube */}
+            {/* Add Time button */}
             <button
               onClick={() => setShowModal(true)}
               className="px-4 py-2 bg-[#29A7D1] text-white rounded shadow hover:opacity-90"
             >
               Add Time
             </button>
+
+            {/* +2 and Delete buttons */}
+            <div className="flex space-x-2">
+              <button
+                onClick={handlePlusTwo}
+                disabled={!selectedSolve}
+                className={`px-4 py-2 rounded shadow ${
+                  selectedSolve
+                    ? "bg-[#29A7D1] text-white hover:opacity-90"
+                    : "bg-gray-400 text-gray-200 cursor-not-allowed"
+                }`}
+              >
+                {selectedSolve?.plus_two ? "Undo +2" : "+2"}
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={!selectedSolve}
+                className={`px-4 py-2 rounded shadow ${
+                  selectedSolve
+                    ? "bg-red-600 text-white hover:bg-red-700"
+                    : "bg-gray-400 text-gray-200 cursor-not-allowed"
+                }`}
+              >
+                Delete
+              </button>
+            </div>
+
             <CubePreview scramble={selectedSolve?.scramble_text} eventId={eventId} />
             <PerformanceChart solves={filteredSolves} />
           </div>

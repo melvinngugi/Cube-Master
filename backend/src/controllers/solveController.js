@@ -11,20 +11,15 @@ import {
 // Save scramble and solve
 export const createSolve = async (req, res) => {
   try {
-    const {
-      user_id,
-      scramble_text,
-      solve_time,
-      cube_id, // now read from body
-    } = req.body;
+    const { user_id, scramble_text, solve_time, cube_id } = req.body;
 
     if (!scramble_text || !user_id || solve_time == null || !cube_id) {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-    console.log("Saving solve for user_id:", user_id, "cube_id:", cube_id);
+    console.log("Creating solve:", { user_id, scramble_text, solve_time, cube_id });
 
-    // Insert scramble into SCRAMBLE table and return SCRAMBLE_ID
+    // Insert scramble
     const scrambleResult = await execute(
       `INSERT INTO Scramble (CUBE_ID, SOURCE, DATE_GENERATED, SCRAMBLE_TEXT)
        VALUES (:cube_id, :source, CURRENT_TIMESTAMP, :scramble_text)
@@ -46,11 +41,7 @@ export const createSolve = async (req, res) => {
     }
 
     // Generate solutions only for 3x3
-    let beginner = null;
-    let xcross = null;
-    let xxcross = null;
-    let xxxcross = null;
-
+    let beginner = null, xcross = null, xxcross = null, xxxcross = null;
     if (cube_id === 1) {
       beginner = await generateBeginner2LookCFOP(scramble_text);
       xcross = await generateXCrossCFOP(scramble_text);
@@ -58,18 +49,19 @@ export const createSolve = async (req, res) => {
       xxxcross = await generateXXXCrossCFOP(scramble_text);
     }
 
-    // Insert solve into SOLVERECORD table linked to scramble
+    // Insert solve
     const solveResult = await execute(
       `INSERT INTO SolveRecord (
         user_id, scramble_id, cube_id, solve_time, timestamp,
         BEGINNER_GENERATED_CROSS,
         XCROSS_GENERATED_CROSS,
         XXCROSS_GENERATED_CROSS,
-        XXXCROSS_GENERATED_CROSS
+        XXXCROSS_GENERATED_CROSS,
+        PLUS_TWO
       )
       VALUES (
         :user_id, :scramble_id, :cube_id, :solve_time, CURRENT_TIMESTAMP,
-        :beginner, :xcross, :xxcross, :xxxcross
+        :beginner, :xcross, :xxcross, :xxxcross, 0
       )
       RETURNING solve_id INTO :solve_id`,
       {
@@ -87,6 +79,7 @@ export const createSolve = async (req, res) => {
     );
 
     const solveId = solveResult.outBinds.solve_id[0];
+    console.log("Inserted solveId:", solveId);
 
     res.status(201).json({
       message: "Solve saved successfully",
@@ -110,6 +103,7 @@ export const createSolve = async (req, res) => {
 export const getSolvesByUser = async (req, res) => {
   try {
     const { userId } = req.params;
+    console.log("Fetching solves for userId:", userId);
 
     const result = await execute(
       `SELECT sr.solve_id,
@@ -122,6 +116,7 @@ export const getSolvesByUser = async (req, res) => {
               sr.XCROSS_GENERATED_CROSS,
               sr.XXCROSS_GENERATED_CROSS,
               sr.XXXCROSS_GENERATED_CROSS,
+              sr.PLUS_TWO,
               s.scramble_text,
               s.cube_id AS scramble_cube_id
        FROM SolveRecord sr
@@ -131,9 +126,101 @@ export const getSolvesByUser = async (req, res) => {
       { userId }
     );
 
+    console.log("Fetched solves count:", result.rows.length);
     res.json({ solves: result.rows });
   } catch (error) {
     console.error("Fetch solves error:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+// Toggle +2 penalty
+export const togglePlusTwo = async (req, res) => {
+  try {
+    const solveId = Number(req.params.solveId);
+    console.log("togglePlusTwo called for solveId:", solveId, typeof solveId);
+
+    const result = await execute(
+      `SELECT 
+         SOLVE_TIME AS "SOLVE_TIME",
+         PLUS_TWO AS "PLUS_TWO"
+       FROM SolveRecord 
+       WHERE SOLVE_ID = :solveId`,
+      { solveId }
+    );
+
+    if (result.rows.length === 0) {
+      console.warn("Solve not found for toggle:", solveId);
+      return res.status(404).json({ message: "Solve not found" });
+    }
+
+    // ✔ FIXED — use object fields instead of array index
+    const row = result.rows[0];
+    const rawTime = row.SOLVE_TIME;
+    const rawPlusTwo = row.PLUS_TWO;
+
+    console.log("Raw values from DB:", { rawTime, rawPlusTwo });
+
+    const currentTime = rawTime == null ? 0 : parseFloat(rawTime);
+    const plusTwo = Number(rawPlusTwo) === 1;
+
+    if (Number.isNaN(currentTime)) {
+      console.error("Invalid solve_time in DB:", rawTime);
+      return res.status(500).json({ message: "Invalid solve_time in DB", rawTime });
+    }
+
+    let newTime, newPlusTwo;
+    if (plusTwo) {
+      newTime = currentTime - 2000;
+      newPlusTwo = 0;
+    } else {
+      newTime = currentTime + 2000;
+      newPlusTwo = 1;
+    }
+
+    console.log("Updating solve:", { solveId, newTime, newPlusTwo });
+
+    await execute(
+      `UPDATE SolveRecord
+       SET SOLVE_TIME = :newTime, PLUS_TWO = :newPlusTwo
+       WHERE SOLVE_ID = :solveId`,
+      { solveId, newTime, newPlusTwo },
+      { autoCommit: true }
+    );
+
+    res.status(200).json({
+      message: "Toggled +2",
+      solveId,
+      plus_two: newPlusTwo,
+      newTime,
+    });
+  } catch (error) {
+    console.error("Toggle +2 error:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+// Delete solve
+export const deleteSolve = async (req, res) => {
+  try {
+    const { solveId } = req.params;
+    console.log("Deleting solveId:", solveId);
+
+    const result = await execute(
+      `DELETE FROM SolveRecord WHERE solve_id = :solveId`,
+      { solveId },
+      { autoCommit: true }
+    );
+
+    if (result.rowsAffected === 0) {
+      console.warn("Solve not found for delete:", solveId);
+      return res.status(404).json({ message: "Solve not found" });
+    }
+
+    console.log("Deleted solveId:", solveId);
+    res.status(200).json({ message: "Solve deleted successfully", solveId });
+  } catch (error) {
+    console.error("Delete solve error:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
