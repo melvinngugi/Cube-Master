@@ -41,12 +41,17 @@ export default function ReviewPage() {
             xcross_solution: s.XCROSS_GENERATED_CROSS,
             xxcross_solution: s.XXCROSS_GENERATED_CROSS,
             xxxcross_solution: s.XXXCROSS_GENERATED_CROSS,
-            cube_id: s.CUBE_ID,
+            cube_id: s.CUBE_ID ?? 1,
             plus_two: s.PLUS_TWO === 1,
           }));
 
-          setSolves(normalized);
-          setSelectedSolve((prev) => prev ?? normalized[0] ?? null);
+          // Keep newest first for consistency with Sidebar
+          const newestFirst = normalized.sort(
+            (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+          );
+
+          setSolves(newestFirst);
+          setSelectedSolve((prev) => prev ?? newestFirst[0] ?? null);
         }
       } catch (err) {
         console.error("Failed to fetch solves:", err);
@@ -99,6 +104,7 @@ export default function ReviewPage() {
           cube_id: cubeId,
           plus_two: false,
         };
+        // Prepend newest
         setSolves((prev) => [newSolve, ...prev]);
         setSelectedSolve(newSolve);
       } else {
@@ -112,7 +118,6 @@ export default function ReviewPage() {
     }
   };
 
-  // Toggle +2 penalty handler
   const handlePlusTwo = async () => {
     if (!selectedSolve || !token) return;
     try {
@@ -143,7 +148,6 @@ export default function ReviewPage() {
     }
   };
 
-  // Delete handler with confirmation
   const handleDelete = async () => {
     if (!selectedSolve || !token) return;
     const confirmDelete = window.confirm(
@@ -167,13 +171,56 @@ export default function ReviewPage() {
     }
   };
 
+  // --- Helpers for Sidebar ---
+  const format = (ms) => {
+    if (typeof ms !== "number" || Number.isNaN(ms)) return "--.--";
+    const sec = Math.floor(ms / 1000);
+    const dec = Math.floor((ms % 1000) / 10);
+    return `${sec}.${dec.toString().padStart(2, "0")}`;
+  };
+
+  const rawAvg = (arr) =>
+    arr.length === 0 ? null : arr.reduce((a, b) => a + b, 0) / arr.length;
+
+  // Newest-first times for stats (aligns with Sidebar and table)
+  const times = filteredSolves
+    .map((s) => s.solve_time)
+    .filter((n) => !Number.isNaN(n));
+
+  const stats = {
+    currentSingle: times.length ? format(times[0]) : "00.00",
+    bestSingle: times.length ? format(Math.min(...times)) : "00.00",
+    currentAo5: times.length >= 5 ? format(rawAvg(times.slice(0, 5)) || 0) : "--",
+    currentAo12: times.length >= 12 ? format(rawAvg(times.slice(0, 12)) || 0) : "--",
+    bestAo5:
+      times.length >= 5
+        ? format(
+            Math.min(
+              ...times
+                .map((_, i) => rawAvg(times.slice(i, i + 5)))
+                .filter((v) => v !== null && !Number.isNaN(v))
+            )
+          )
+        : "--",
+    bestAo12:
+      times.length >= 12
+        ? format(
+            Math.min(
+              ...times
+                .map((_, i) => rawAvg(times.slice(i, i + 12)))
+                .filter((v) => v !== null && !Number.isNaN(v))
+            )
+          )
+        : "--",
+  };
+
   return (
     <div className="flex h-screen bg-[#B4B6B9]">
       <Sidebar
-        solves={filteredSolves}
-        user={user}
-        isAuthenticated={!!token}
+        solvesForActiveCube={filteredSolves}
         eventId={eventId}
+        stats={stats}
+        format={format}
       />
 
       <div className="flex flex-col flex-1 relative">

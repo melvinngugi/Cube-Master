@@ -1,139 +1,58 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useAuth } from "../context/AuthContext";
 import LoginModal from "./LoginModal";
 import LogoutConfirm from "./LogoutConfirm";
 import ProfileModal from "./ProfileModal";
 import { useNavigate } from "react-router-dom";
 
-export default function Sidebar({ solves = [], setDbSolvesExternal, eventId }) {
-  const { user, token } = useAuth();
+export default function Sidebar({
+  solvesForActiveCube = [],
+  eventId,
+  stats,
+  format,
+}) {
+  const { user } = useAuth();
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
 
-  // Local sidebar solves (used only when logged in)
-  const [dbSolves, setDbSolves] = useState([]);
-
   const navigate = useNavigate();
 
-  // Expose helper functions to parent ONCE
-  useEffect(() => {
-    if (!setDbSolvesExternal) return;
-
-    const helpers = {
-      addSolve: (newSolve) => setDbSolves((prev) => [newSolve, ...prev]),
-      editSolve: (updatedSolve) =>
-        setDbSolves((prev) =>
-          prev.map((s) =>
-            s.solve_id === updatedSolve.solve_id ? updatedSolve : s
-          )
-        ),
-      replaceAll: (solvesArr) => setDbSolves(solvesArr),
-    };
-
-    setDbSolvesExternal(helpers);
-  }, [setDbSolvesExternal]);
-
-  // Fetch solves from DB on login
-  useEffect(() => {
-    if (!user || !token) return;
-
-    const fetchSolves = async () => {
-      try {
-        const res = await fetch(`/api/v1/solves/${user.id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        const data = await res.json();
-        if (Array.isArray(data.solves)) {
-          const normalized = data.solves.map((s) => ({
-            solve_id: s.SOLVE_ID,
-            scramble_text: s.SCRAMBLE_TEXT,
-            timestamp: s.TIMESTAMP,
-            solve_time: s.SOLVE_TIME,
-            cube_id: s.CUBE_ID ?? 1, // include cube_id, default to 1 (3x3) if missing
-          }));
-
-          setDbSolves(normalized);
-        }
-      } catch (err) {
-        console.error("Failed to fetch solves:", err);
-      }
-    };
-
-    fetchSolves();
-  }, [user, token]);
-
-  // Time formatter (expects milliseconds)
-  const format = (ms) => {
-    if (typeof ms !== "number" || Number.isNaN(ms)) return "--.--";
-    const sec = Math.floor(ms / 1000);
-    const dec = Math.floor((ms % 1000) / 10);
-    return `${sec}.${dec.toString().padStart(2, "0")}`;
-  };
-
-  // Map eventId → cube_id
-  const cubeMap = { "333": 1, "222": 2, pyram: 3 };
-  const activeCubeId = cubeMap[eventId] ?? 1;
-
-  // Select which solves to display (filter by cube type)
+  // Convert solve_time values to numbers
   const displaySolves = useMemo(() => {
-    if (!user) {
-      // guest mode: parent "solves" should include cube_id
-      return solves
-        .filter((s) => s.cube_id === activeCubeId)
-        .map((s) =>
-          typeof s.solve_time === "number" ? s.solve_time : Number(s.solve_time)
-        )
-        .filter((n) => !Number.isNaN(n));
-    }
-
-    return dbSolves
-      .filter((s) => s.cube_id === activeCubeId)
+    return solvesForActiveCube
       .map((s) =>
         typeof s.solve_time === "number" ? s.solve_time : Number(s.solve_time)
       )
       .filter((n) => !Number.isNaN(n));
-  }, [dbSolves, solves, user, activeCubeId]);
+  }, [solvesForActiveCube]);
 
-  // Averages helpers
-  const rawAvg = (arr) =>
-    arr.length === 0 ? null : arr.reduce((a, b) => a + b, 0) / arr.length;
+  // Keep newest-first order (index 0 = newest)
+  const renderSolves = displaySolves;
 
-  const currentAo5 = format(rawAvg(displaySolves.slice(0, 5)) || 0);
-  const currentAo12 = format(rawAvg(displaySolves.slice(0, 12)) || 0);
+  // --- CURRENT VALUES FROM NEWEST SOLVE ---
+  const latestSolve = renderSolves[0];
 
-  const bestAo5 =
-    displaySolves.length >= 5
-      ? format(
-          Math.min(
-            ...displaySolves
-              .map((_, i) => rawAvg(displaySolves.slice(i, i + 5)))
-              .filter((v) => v !== null && !Number.isNaN(v))
-          )
-        )
+  const currentAo5Slice = renderSolves.slice(0, 5);
+  const currentAo12Slice = renderSolves.slice(0, 12);
+
+  const currentSingle = latestSolve ? format(latestSolve) : "--";
+
+  const currentAo5 =
+    currentAo5Slice.length === 5
+      ? format(currentAo5Slice.reduce((a, b) => a + b, 0) / 5)
       : "--";
 
-  const bestAo12 =
-    displaySolves.length >= 12
-      ? format(
-          Math.min(
-            ...displaySolves
-              .map((_, i) => rawAvg(displaySolves.slice(i, i + 12)))
-              .filter((v) => v !== null && !Number.isNaN(v))
-          )
-        )
+  const currentAo12 =
+    currentAo12Slice.length === 12
+      ? format(currentAo12Slice.reduce((a, b) => a + b, 0) / 12)
       : "--";
 
-  const bestSingle = displaySolves.length
-    ? format(Math.min(...displaySolves))
-    : "00.00";
+  // best stats still come from props
+  const bestSingle = stats?.bestSingle || "--";
+  const bestAo5 = stats?.bestAo5 || "--";
+  const bestAo12 = stats?.bestAo12 || "--";
 
-  const currentSingle = displaySolves.length
-    ? format(displaySolves[0])
-    : "00.00";
-
-  // Current cube type label
   const cubeLabel =
     eventId === "333" ? "3×3×3" : eventId === "222" ? "2×2×2" : "Pyraminx";
 
@@ -165,7 +84,7 @@ export default function Sidebar({ solves = [], setDbSolvesExternal, eventId }) {
           </div>
         </div>
 
-        {/* Stats */}
+        {/* Small Stats Table */}
         <div
           className="bg-[#B3B3B3] text-black p-2 rounded-lg"
           style={{ fontFamily: "'Share Tech Mono', monospace" }}
@@ -174,6 +93,7 @@ export default function Sidebar({ solves = [], setDbSolvesExternal, eventId }) {
             <span className="font-semibold">Showing:</span>
             <span className="px-2 py-0.5 rounded bg-[#D9D9D9]">{cubeLabel}</span>
           </div>
+
           <div className="grid grid-cols-3 gap-1 text-sm">
             <div></div>
             <div className="font-bold">current</div>
@@ -193,7 +113,7 @@ export default function Sidebar({ solves = [], setDbSolvesExternal, eventId }) {
           </div>
         </div>
 
-        {/* Solve list */}
+        {/* Big Solve Table */}
         <div
           className="bg-[#B3B3B3] text-black p-2 overflow-y-auto rounded-lg flex-1"
           style={{ fontFamily: "'Share Tech Mono', monospace" }}
@@ -207,29 +127,32 @@ export default function Sidebar({ solves = [], setDbSolvesExternal, eventId }) {
                 <th className="text-left">ao12</th>
               </tr>
             </thead>
+
             <tbody>
-              {displaySolves.map((s, i) => {
-                const ao5Slice = displaySolves.slice(i, i + 5);
-                const ao12Slice = displaySolves.slice(i, i + 12);
+              {renderSolves.map((timeValue, renderIndex) => {
+                const ao5Slice = renderSolves.slice(renderIndex, renderIndex + 5);
+                const ao12Slice = renderSolves.slice(
+                  renderIndex,
+                  renderIndex + 12
+                );
 
                 const ao5 =
                   ao5Slice.length === 5
-                    ? format(
-                        ao5Slice.reduce((a, b) => a + b, 0) / ao5Slice.length
-                      )
+                    ? format(ao5Slice.reduce((a, b) => a + b, 0) / 5)
                     : "--";
 
                 const ao12 =
                   ao12Slice.length === 12
-                    ? format(
-                        ao12Slice.reduce((a, b) => a + b, 0) / ao12Slice.length
-                      )
+                    ? format(ao12Slice.reduce((a, b) => a + b, 0) / 12)
                     : "--";
 
+                // Newest solve = index 1, next newest = 2, ...
+                const indexNumber = renderIndex + 1;
+
                 return (
-                  <tr key={i} className="align-top">
-                    <td>{displaySolves.length - i}</td>
-                    <td>{format(s)}</td>
+                  <tr key={renderIndex} className="align-top">
+                    <td>{indexNumber}</td>
+                    <td>{format(timeValue)}</td>
                     <td>{ao5}</td>
                     <td>{ao12}</td>
                   </tr>
@@ -250,7 +173,6 @@ export default function Sidebar({ solves = [], setDbSolvesExternal, eventId }) {
           }}
           title={user ? "Profile" : "Login"}
         >
-          {/* Profile icon */}
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -273,7 +195,6 @@ export default function Sidebar({ solves = [], setDbSolvesExternal, eventId }) {
             onClick={() => setShowLogoutConfirm(true)}
             title="Logout"
           >
-            {/* Logout icon */}
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"

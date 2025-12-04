@@ -4,6 +4,8 @@ import TrainerHeader from "../components/TrainerHeader";
 import AlgorithmCard from "../components/AlgorithmCard";
 import RightSidebar from "../components/RightSidebar";
 import notationImage from "../images/notation.png";
+import useSolves from "../hooks/useSolves";
+import { useAuth } from "../context/AuthContext";
 
 export default function Trainer() {
   const [userId, setUserId] = useState(null);
@@ -12,6 +14,16 @@ export default function Trainer() {
   const [oll, setOll] = useState([]);
   const [pll, setPll] = useState([]);
   const [progress, setProgress] = useState([]);
+
+  const { user, token } = useAuth();
+  const eventId = "333"; // default cube type
+
+  // Hook into the unified solves cache
+  const { getSolvesForCube, stats, format, activeCubeId } = useSolves({
+    user,
+    token,
+    eventId,
+  });
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -79,7 +91,12 @@ export default function Trainer() {
 
   return (
     <div className="flex min-h-screen">
-      <Sidebar />
+      <Sidebar
+        solvesForActiveCube={getSolvesForCube(activeCubeId)}
+        eventId={eventId}
+        stats={stats}
+        format={format}
+      />
       <div className="flex-1 flex flex-col">
         <TrainerHeader />
         <div className="flex flex-1 bg-[#B4B6B9]">
