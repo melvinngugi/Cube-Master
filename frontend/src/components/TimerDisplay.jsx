@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useRef } from "react";
 
 export default function TimerDisplay({
   time,
@@ -9,6 +9,7 @@ export default function TimerDisplay({
   focusMode,
   onSolveSaved,
   scramble,
+  stats, // pass in from parent
 }) {
   // Format milliseconds into seconds.decimal
   const format = (ms) => {
@@ -42,31 +43,6 @@ export default function TimerDisplay({
     prevRunningRef.current = running;
   }, [running, time, scramble, onSolveSaved]);
 
-  // --- Averages (WCA style: drop fastest + slowest) ---
-  const average = (count) => {
-    if (!solves || solves.length < count) return null;
-
-    // Sort solves by timestamp descending (latest first)
-    const sortedByTime = [...solves].sort(
-      (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
-    );
-
-    // Take the most recent N solves
-    const latest = sortedByTime.slice(0, count).map((s) => s.solve_time);
-
-    // Sort those N times ascending
-    const sortedTimes = [...latest].sort((a, b) => a - b);
-
-    // Drop best + worst
-    const trimmed = sortedTimes.slice(1, sortedTimes.length - 1);
-    const avg = trimmed.reduce((a, b) => a + b, 0) / trimmed.length;
-
-    return format(Math.floor(avg));
-  };
-
-  const ao5 = useMemo(() => average(5), [solves]);
-  const ao12 = useMemo(() => average(12), [solves]);
-
   return (
     <div
       className="flex flex-col items-center justify-center"
@@ -81,8 +57,8 @@ export default function TimerDisplay({
       {/* --- AO5 / AO12 --- */}
       {!focusMode && (
         <>
-          <div className="text-[2rem] text-black">ao5: {ao5 || "-"}</div>
-          <div className="text-[2rem] text-black">ao12: {ao12 || "-"}</div>
+          <div className="text-[2rem] text-black">ao5: {stats?.currentAo5 || "-"}</div>
+          <div className="text-[2rem] text-black">ao12: {stats?.currentAo12 || "-"}</div>
         </>
       )}
     </div>

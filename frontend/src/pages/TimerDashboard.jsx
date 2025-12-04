@@ -58,13 +58,13 @@ export default function TimerDashboard() {
           {/* TimerDisplay receives time, solves, and onSolveSaved callback */}
           <TimerDisplay
             time={time}
-            solves={solves} // still passed if TimerDisplay needs it
+            solves={solves}
             armed={armed}
             ready={ready}
             running={running}
             focusMode={focusMode}
             scramble={scramble}
-            onSolveSaved={handleSolveSaved} // key integration point
+            stats={stats}
           />
         </div>
 
