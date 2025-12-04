@@ -9,28 +9,27 @@ import { useAuth } from "../context/AuthContext";
 export default function TimerDashboard() {
   const { user, token } = useAuth();
   const [scramble, setScramble] = useState("");
-  const [eventId, setEventId] = useState("333"); // default cube type
+  const [eventId, setEventId] = useState("333"); //default cube type
   const [focusMode, setFocusMode] = useState(false);
 
-  // Sidebar helper functions (addSolve, editSolve, replaceAll)
+  //Sidebar helper functions (addSolve, editSolve, replaceAll)
   const [sidebarHelpers, setSidebarHelpers] = useState(null);
 
-  // Timer hook
+  //Timer hook
   const { time, running, solves, armed, ready } = useTimer(
     setScramble,
     setFocusMode
   );
 
-  // Save a solve to the backend and update sidebar immediately
   const handleSolveSaved = async (newSolve) => {
     if (!user || !token) return;
 
-    // Map eventId → CUBE_ID in DB
+    //Map eventId → CUBE_ID in DB
     const cubeMap = { "333": 1, "222": 2, pyram: 3 };
     const cubeId = cubeMap[eventId] ?? 1;
 
     try {
-      // Only attach generated solutions for 3×3
+      //Only attach generated solutions for 3×3
       const beginnerSolution =
         eventId === "333" ? newSolve.beginner_generated_solution ?? null : null;
       const advancedSolution =
@@ -46,7 +45,7 @@ export default function TimerDashboard() {
           user_id: user.id,
           scramble_text: newSolve.scramble_text,
           solve_time: newSolve.solve_time,
-          cube_id: cubeId, // always send cube_id
+          cube_id: cubeId,
           beginner_generated_solution: beginnerSolution,
           advanced_generated_solution: advancedSolution,
         }),
@@ -55,7 +54,7 @@ export default function TimerDashboard() {
       const data = await res.json();
 
       if (res.ok) {
-        // Update sidebar instantly with cube_id
+        //Update sidebar instantly with cube_id
         sidebarHelpers?.addSolve?.({
           ...newSolve,
           solve_id: data.solve_id ?? undefined,
@@ -79,7 +78,7 @@ export default function TimerDashboard() {
           user={user}
           isAuthenticated={!!token}
           setDbSolvesExternal={setSidebarHelpers}
-          eventId={eventId} // pass current cube type for filtering
+          eventId={eventId}
         />
       )}
 
@@ -89,7 +88,7 @@ export default function TimerDashboard() {
             scramble={scramble}
             setScramble={setScramble}
             eventId={eventId}
-            setEventId={setEventId} // pass setter to dropdown
+            setEventId={setEventId}
           />
         )}
 
