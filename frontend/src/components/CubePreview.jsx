@@ -5,7 +5,6 @@ export default function CubePreview({ scramble, eventId }) {
 
   useEffect(() => {
     if (twistyRef.current) {
-      // Always set puzzle type when eventId changes
       if (eventId === "333") {
         twistyRef.current.setAttribute("puzzle", "3x3x3");
       } else if (eventId === "222") {
@@ -14,7 +13,6 @@ export default function CubePreview({ scramble, eventId }) {
         twistyRef.current.setAttribute("puzzle", "pyraminx");
       }
 
-      // Set scramble if available
       if (scramble) {
         twistyRef.current.setAttribute("alg", scramble);
       }

@@ -1,4 +1,3 @@
-// src/components/LogoutConfirm.jsx
 import { useAuth } from "../context/AuthContext";
 import ModalPortal from "./ModalPortal";
 

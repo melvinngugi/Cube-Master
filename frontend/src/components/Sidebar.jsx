@@ -18,7 +18,7 @@ export default function Sidebar({
 
   const navigate = useNavigate();
 
-  // Convert solve_time values to numbers
+  //Convert solve_time values to numbers
   const displaySolves = useMemo(() => {
     return solvesForActiveCube
       .map((s) =>
@@ -27,10 +27,8 @@ export default function Sidebar({
       .filter((n) => !Number.isNaN(n));
   }, [solvesForActiveCube]);
 
-  // Keep newest-first order (index 0 = newest)
   const renderSolves = displaySolves;
 
-  // --- CURRENT VALUES FROM NEWEST SOLVE ---
   const latestSolve = renderSolves[0];
 
   const currentAo5Slice = renderSolves.slice(0, 5);
@@ -48,7 +46,6 @@ export default function Sidebar({
       ? format(currentAo12Slice.reduce((a, b) => a + b, 0) / 12)
       : "--";
 
-  // best stats still come from props
   const bestSingle = stats?.bestSingle || "--";
   const bestAo5 = stats?.bestAo5 || "--";
   const bestAo12 = stats?.bestAo12 || "--";
@@ -84,7 +81,7 @@ export default function Sidebar({
           </div>
         </div>
 
-        {/* Small Stats Table */}
+        {/*Small Stats Table*/}
         <div
           className="bg-[#B3B3B3] text-black p-2 rounded-lg"
           style={{ fontFamily: "'Share Tech Mono', monospace" }}
@@ -113,7 +110,7 @@ export default function Sidebar({
           </div>
         </div>
 
-        {/* Big Solve Table */}
+        {/*Big Solve Table*/}
         <div
           className="bg-[#B3B3B3] text-black p-2 overflow-y-auto rounded-lg flex-1"
           style={{ fontFamily: "'Share Tech Mono', monospace" }}
@@ -146,7 +143,7 @@ export default function Sidebar({
                     ? format(ao12Slice.reduce((a, b) => a + b, 0) / 12)
                     : "--";
 
-                // Newest solve = index 1, next newest = 2, ...
+                //Newest solve = index 1
                 const indexNumber = renderIndex + 1;
 
                 return (
@@ -163,7 +160,7 @@ export default function Sidebar({
         </div>
       </div>
 
-      {/* Footer */}
+      {/*Footer*/}
       <div className="flex justify-between items-center pt-3">
         <button
           className="text-white"

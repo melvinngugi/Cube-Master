@@ -16,9 +16,8 @@ export default function Trainer() {
   const [progress, setProgress] = useState([]);
 
   const { user, token } = useAuth();
-  const eventId = "333"; // default cube type
+  const eventId = "333";             //Default cube type
 
-  // Hook into the unified solves cache
   const { getSolvesForCube, stats, format, activeCubeId } = useSolves({
     user,
     token,

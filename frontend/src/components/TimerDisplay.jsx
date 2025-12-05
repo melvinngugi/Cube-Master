@@ -9,26 +9,25 @@ export default function TimerDisplay({
   focusMode,
   onSolveSaved,
   scramble,
-  stats, // pass in from parent
+  stats,
 }) {
-  // Format milliseconds into seconds.decimal
+  //Format milliseconds into seconds.decimal
   const format = (ms) => {
     const sec = Math.floor(ms / 1000);
     const dec = Math.floor((ms % 1000) / 10);
     return `${sec}.${dec.toString().padStart(2, "0")}`;
   };
 
-  // Split main + decimal for large font layout
+  //Split main + decimal for large font layout
   const formatted = format(time);
   const [main, decimal] = formatted.split(".");
 
-  // Color logic
   let color = "text-black font-bold";
   if (armed && !ready) color = "text-red-600 font-bold";
   else if (ready && !running) color = "text-green-600 font-bold";
   else if (running) color = "text-green-600 font-bold";
 
-  // Track previous running state to detect stop
+  //Track previous running state to detect stop
   const prevRunningRef = useRef(false);
 
   useEffect(() => {
@@ -49,13 +48,13 @@ export default function TimerDisplay({
       className="flex flex-col items-center justify-center"
       style={{ fontFamily: "'Share Tech Mono', monospace" }}
     >
-      {/* --- BIG TIMER DISPLAY --- */}
+      {/*BIG TIMER DISPLAY*/}
       <div className={`flex items-baseline mb-6 ${color}`}>
         <span className="text-[14rem] font-bold leading-none">{main}</span>
         <span className="text-[8rem] font-bold leading-none">.{decimal}</span>
       </div>
 
-      {/* --- AO5 / AO12 --- */}
+      {/*AO5 / AO12*/}
       {!focusMode && (
         <>
           <div className="text-[2rem] text-black">ao5: {stats?.currentAo5 || "-"}</div>

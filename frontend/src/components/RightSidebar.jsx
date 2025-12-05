@@ -1,4 +1,3 @@
-// src/components/RightSidebar.jsx
 import React, { useState } from "react";
 import ProgressBar from "./ProgressBar";
 
@@ -26,7 +25,7 @@ export default function RightSidebar({
 
   return (
     <div className="w-64 bg-[#6D7276] text-white p-4 shadow-lg sticky top-0 h-screen overflow-y-auto">
-      {/* Beginner Dropdown */}
+      {/*Beginner Dropdown*/}
       <div>
         <button
           onClick={() => setOpenBeginner(!openBeginner)}
@@ -52,7 +51,7 @@ export default function RightSidebar({
         )}
       </div>
 
-      {/* Progress bars for Beginner */}
+      {/*Progress bars for Beginner*/}
       <div className="mt-4 space-y-4">
         <ProgressBar
           label="2-Look OLL Progress"
@@ -68,7 +67,7 @@ export default function RightSidebar({
         />
       </div>
 
-      {/* Advanced Dropdown */}
+      {/*Advanced Dropdown*/}
       <div className="mt-6">
         <button
           onClick={() => setOpenAdvanced(!openAdvanced)}
@@ -94,7 +93,7 @@ export default function RightSidebar({
         )}
       </div>
 
-      {/* Progress bars for Advanced */}
+      {/*Progress bars for Advanced*/}
       <div className="mt-4 space-y-4">
         <ProgressBar
           label="OLL Progress"

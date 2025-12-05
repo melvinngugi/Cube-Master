@@ -1,4 +1,3 @@
-// src/components/AlgorithmCard.jsx
 import React, { useEffect, useState } from "react";
 
 export default function AlgorithmCard({
@@ -8,17 +7,15 @@ export default function AlgorithmCard({
   userId,
   algorithmId,
   initialStatus,
-  onStatusChange, // parent callback to refresh progress
+  onStatusChange,
 }) {
   const [status, setStatus] = useState(initialStatus || "NONE");
 
-  // Keep local state in sync if initialStatus changes after fetch
   useEffect(() => {
     setStatus(initialStatus || "NONE");
   }, [initialStatus]);
 
   const cycleStatus = async () => {
-    // Prevent action if we don’t have the logged-in user
     if (!userId) {
       console.warn("No userId available; are you logged in?");
       return;
@@ -27,7 +24,6 @@ export default function AlgorithmCard({
     const next =
       status === "NONE" ? "LEARNING" : status === "LEARNING" ? "LEARNED" : "NONE";
 
-    // Optimistic update
     setStatus(next);
 
     try {
@@ -38,17 +34,14 @@ export default function AlgorithmCard({
       });
 
       if (!res.ok) {
-        // Revert on failure
         console.error("Failed to save progress:", await res.text());
         setStatus(status);
         return;
       }
 
-      // Ask parent to refresh aggregated progress (sidebar bars)
       if (onStatusChange) onStatusChange();
     } catch (err) {
       console.error("Network error while saving progress:", err);
-      // Revert on failure
       setStatus(status);
     }
   };

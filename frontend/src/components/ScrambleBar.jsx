@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 
 export default function ScrambleBar({ scramble, setScramble, eventId, setEventId }) {
-  // Fetch scramble whenever eventId changes
   useEffect(() => {
     if (setScramble && eventId) {
       window.getWcaScramble(eventId).then(setScramble);
@@ -17,16 +16,16 @@ export default function ScrambleBar({ scramble, setScramble, eventId, setEventId
             value={eventId}
             onChange={(e) => {
               const newEventId = e.target.value;
-              setEventId(newEventId); // ✅ update cube type
+              setEventId(newEventId);
               if (setScramble) {
-                // fetch a scramble immediately for the new cube
+                //Fetch a scramble immediately for the new cube
                 window.getWcaScramble(newEventId).then(setScramble);
               }
             }}
           >
             <option value="333">3×3×3</option>
             <option value="222">2×2×2</option>
-            <option value="pyram">Pyraminx</option> {/* ✅ use pyram */}
+            <option value="pyram">Pyraminx</option> {/*Use pyram*/}
           </select>
 
           {setScramble && (

@@ -45,7 +45,6 @@ export default function ReviewPage() {
             plus_two: s.PLUS_TWO === 1,
           }));
 
-          // Keep newest first for consistency with Sidebar
           const newestFirst = normalized.sort(
             (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
           );
@@ -104,7 +103,6 @@ export default function ReviewPage() {
           cube_id: cubeId,
           plus_two: false,
         };
-        // Prepend newest
         setSolves((prev) => [newSolve, ...prev]);
         setSelectedSolve(newSolve);
       } else {
@@ -171,7 +169,6 @@ export default function ReviewPage() {
     }
   };
 
-  // --- Helpers for Sidebar ---
   const format = (ms) => {
     if (typeof ms !== "number" || Number.isNaN(ms)) return "--.--";
     const sec = Math.floor(ms / 1000);
@@ -182,7 +179,6 @@ export default function ReviewPage() {
   const rawAvg = (arr) =>
     arr.length === 0 ? null : arr.reduce((a, b) => a + b, 0) / arr.length;
 
-  // Newest-first times for stats (aligns with Sidebar and table)
   const times = filteredSolves
     .map((s) => s.solve_time)
     .filter((n) => !Number.isNaN(n));
@@ -247,9 +243,9 @@ export default function ReviewPage() {
             )}
           </div>
 
-          {/* Right side */}
+          {/*Right side*/}
           <div className="w-1/3 px-4 py-4 flex flex-col items-center space-y-4">
-            {/* Add Time button */}
+            {/*Add Time button*/}
             <button
               onClick={() => setShowModal(true)}
               className="px-4 py-2 bg-[#29A7D1] text-white rounded shadow hover:opacity-90"
@@ -257,7 +253,7 @@ export default function ReviewPage() {
               Add Time
             </button>
 
-            {/* +2 and Delete buttons */}
+            {/*+2 and Delete buttons*/}
             <div className="flex space-x-2">
               <button
                 onClick={handlePlusTwo}

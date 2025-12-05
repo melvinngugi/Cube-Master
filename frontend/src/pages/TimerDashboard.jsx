@@ -10,16 +10,15 @@ import { useAuth } from "../context/AuthContext";
 export default function TimerDashboard() {
   const { user, token } = useAuth();
   const [scramble, setScramble] = useState("");
-  const [eventId, setEventId] = useState("333"); // default cube type
+  const [eventId, setEventId] = useState("333");           //Default cube type
   const [focusMode, setFocusMode] = useState(false);
 
-  // Timer hook
   const { time, running, solves, armed, ready } = useTimer(
     setScramble,
     setFocusMode
   );
 
-  // Unified solves cache and stats
+  //Solves cache and stats
   const {
     addSolve,
     getSolvesForCube,
@@ -28,7 +27,6 @@ export default function TimerDashboard() {
     activeCubeId,
   } = useSolves({ user, token, eventId });
 
-  // Handle solve saved: push into cache (optimistic), backend sync inside useSolves
   const handleSolveSaved = async (newSolve) => {
     await addSolve(newSolve, eventId);
   };

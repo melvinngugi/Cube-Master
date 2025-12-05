@@ -1,4 +1,3 @@
-// src/components/LoginModal.jsx
 import { useState } from "react";
 import { login, signup } from "../api/auth";
 import { useAuth } from "../context/AuthContext";

@@ -9,7 +9,7 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     if (token) {
       localStorage.setItem("token", token);
-      // Fetch user profile
+      //Fetch user profile
       fetch("/api/v1/auth/profile", {
         headers: { Authorization: `Bearer ${token}` },
       })

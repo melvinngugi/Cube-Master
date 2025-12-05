@@ -6,9 +6,9 @@ export default function useTimer(setScramble, setFocusMode) {
   const [armed, setArmed] = useState(false);
   const [ready, setReady] = useState(false);
   const [solves, setSolves] = useState([]);
-  const [scrambleString, setScrambleString] = useState(""); // track current scramble text
+  const [scrambleString, setScrambleString] = useState("");
 
-  // Timer loop
+  //Timer loop
   useEffect(() => {
     let animationFrame;
     let startTime;
@@ -27,37 +27,37 @@ export default function useTimer(setScramble, setFocusMode) {
     return () => cancelAnimationFrame(animationFrame);
   }, [running]);
 
-  // Handle spacebar press/release
+  //Handle spacebar press/release
   useEffect(() => {
     let holdTimeout;
 
     const handleKeyDown = (e) => {
       if (e.code === "Space" && !armed && !running) {
         setArmed(true);
-        setTime(0); // reset timer immediately
-        setFocusMode(true); // activate focus mode immediately
-        holdTimeout = setTimeout(() => setReady(true), 500); // ready after 0.5s
+        setTime(0);                //Reset timer immediately
+        setFocusMode(true);           //Activate focus mode immediately
+        holdTimeout = setTimeout(() => setReady(true), 500);         //Ready after 0.5s
       }
     };
 
     const handleKeyUp = (e) => {
       if (e.code === "Space") {
         if (armed && ready && !running) {
-          setRunning(true); // start timer
+          setRunning(true);           //Start timer
         } else if (running) {
-          setRunning(false); // stop timer
-          setFocusMode(false); // deactivate focus mode
+          setRunning(false);           //Stop timer
+          setFocusMode(false);         //Deactivate focus mode
 
           const newSolve = {
-            solve_time: time,              //use solve_time consistently
-            scramble_text: scrambleString, //match DB field names
+            solve_time: time,
+            scramble_text: scrambleString,
             timestamp: new Date().toISOString(),
           };
 
-          // update local state only
+          //Update local state only
           setSolves((prev) => [newSolve, ...prev]);
 
-          // generate next scramble
+          //Generate next scramble
           if (setScramble && typeof window.getWcaScramble === "function") {
             window.getWcaScramble("333").then((scramble) => {
               setScramble(scramble);

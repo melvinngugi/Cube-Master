@@ -27,7 +27,6 @@ export default function useSolves({ user, token, eventId }) {
     return `${sec}.${dec.toString().padStart(2, "0")}`;
   };
 
-  // Newest-first numeric array for UI
   const displaySolves = useMemo(() => {
     return (solvesByCube[activeCubeId] || [])
       .map((s) =>
@@ -39,7 +38,6 @@ export default function useSolves({ user, token, eventId }) {
   const rawAvg = (arr) =>
     arr.length === 0 ? null : arr.reduce((a, b) => a + b, 0) / arr.length;
 
-  // Stats — index 0 = most recent solve
   const currentSingle = displaySolves.length ? format(displaySolves[0]) : "00.00";
 
   const bestSingle = displaySolves.length
@@ -87,7 +85,6 @@ export default function useSolves({ user, token, eventId }) {
 
     const optimistic = { ...newSolve, cube_id: cubeId, client_id: clientId };
 
-    // Prepend so newest is always index 0
     setSolvesByCube((prev) => ({
       ...prev,
       [cubeId]: [optimistic, ...(prev[cubeId] || [])],
@@ -139,7 +136,6 @@ export default function useSolves({ user, token, eventId }) {
     }
   };
 
-  // Edit solve
   const editSolve = async (updatedSolve) => {
     const { cube_id } = updatedSolve;
 

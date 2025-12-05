@@ -1,4 +1,3 @@
-// src/components/ProfileModal.jsx
 import ModalPortal from "./ModalPortal";
 
 export default function ProfileModal({ user, onClose }) {
