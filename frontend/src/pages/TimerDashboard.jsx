@@ -55,7 +55,6 @@ export default function TimerDashboard() {
         )}
 
         <div className="flex-1 flex items-center justify-center mt-16">
-          {/* TimerDisplay receives time, solves, and onSolveSaved callback */}
           <TimerDisplay
             time={time}
             solves={solves}
@@ -65,6 +64,10 @@ export default function TimerDashboard() {
             focusMode={focusMode}
             scramble={scramble}
             stats={stats}
+            onSolveSaved={(solve) => {
+              console.log("TimerDashboard: solve saved", solve);
+              addSolve(solve, eventId);
+            }}
           />
         </div>
 

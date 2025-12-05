@@ -34,6 +34,7 @@ export default function TimerDisplay({
   useEffect(() => {
     const prevRunning = prevRunningRef.current;
     if (prevRunning && !running && time > 0) {
+      console.log("Timer stopped, saving solve", { time, scramble });
       onSolveSaved?.({
         solve_time: time,
         scramble_text: scramble,
