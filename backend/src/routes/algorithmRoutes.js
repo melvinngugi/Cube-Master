@@ -3,7 +3,6 @@ import { execute } from "../db/oracle.js";
 
 const router = express.Router();
 
-// GET /api/v1/algorithms?category=OLL or PLL
 router.get("/algorithms", async (req, res) => {
   const { category } = req.query;
 

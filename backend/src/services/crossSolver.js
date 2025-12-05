@@ -20,7 +20,6 @@ export function solveCross(scramble) {
   console.log("Final cross moves:", crossMoves);
   console.log("Cube after cross:", cs.toFaceletString());
 
-  // Trust csTimer’s solver: if it gave moves, the cross is solved
   console.log("Cross validated successfully (using csTimer solver).");
 
   return crossMoves;

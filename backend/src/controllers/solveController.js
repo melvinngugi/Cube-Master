@@ -1,4 +1,3 @@
-// backend/src/controllers/solveController.js
 import oracledb from "oracledb";
 import { execute } from "../db/oracle.js";
 import {
@@ -8,7 +7,7 @@ import {
   generateXXXCrossCFOP,
 } from "../services/cfopGenerator.js";
 
-// Save scramble and solve
+//Save scramble and solve
 export const createSolve = async (req, res) => {
   try {
     const { user_id, scramble_text, solve_time, cube_id } = req.body;
@@ -19,7 +18,7 @@ export const createSolve = async (req, res) => {
 
     console.log("Creating solve:", { user_id, scramble_text, solve_time, cube_id });
 
-    // Insert scramble
+    //Insert scramble
     const scrambleResult = await execute(
       `INSERT INTO Scramble (CUBE_ID, SOURCE, DATE_GENERATED, SCRAMBLE_TEXT)
        VALUES (:cube_id, :source, CURRENT_TIMESTAMP, :scramble_text)
@@ -40,7 +39,7 @@ export const createSolve = async (req, res) => {
       return res.status(500).json({ message: "Failed to insert scramble" });
     }
 
-    // Generate solutions only for 3x3
+    //Generate solutions only for 3x3
     let beginner = null, xcross = null, xxcross = null, xxxcross = null;
     if (cube_id === 1) {
       beginner = await generateBeginner2LookCFOP(scramble_text);
@@ -49,7 +48,7 @@ export const createSolve = async (req, res) => {
       xxxcross = await generateXXXCrossCFOP(scramble_text);
     }
 
-    // Insert solve
+    //Insert solve
     const solveResult = await execute(
       `INSERT INTO SolveRecord (
         user_id, scramble_id, cube_id, solve_time, timestamp,
@@ -99,7 +98,7 @@ export const createSolve = async (req, res) => {
   }
 };
 
-// Fetch solves by user
+//Fetch solves by user
 export const getSolvesByUser = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -134,7 +133,7 @@ export const getSolvesByUser = async (req, res) => {
   }
 };
 
-// Toggle +2 penalty
+//Toggle +2 penalty
 export const togglePlusTwo = async (req, res) => {
   try {
     const solveId = Number(req.params.solveId);
@@ -154,7 +153,6 @@ export const togglePlusTwo = async (req, res) => {
       return res.status(404).json({ message: "Solve not found" });
     }
 
-    // ✔ FIXED — use object fields instead of array index
     const row = result.rows[0];
     const rawTime = row.SOLVE_TIME;
     const rawPlusTwo = row.PLUS_TWO;
@@ -200,7 +198,7 @@ export const togglePlusTwo = async (req, res) => {
   }
 };
 
-// Delete solve
+//Delete solve
 export const deleteSolve = async (req, res) => {
   try {
     const { solveId } = req.params;

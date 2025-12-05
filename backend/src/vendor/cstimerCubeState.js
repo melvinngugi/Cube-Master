@@ -2,9 +2,7 @@ import "./shim.js";
 import mathlib from "./mathlib.js";
 import { parseScramble } from "./cubeutil.js";
 
-/**
- * Cube state using csTimer's CubieCube representation.
- */
+
 export class CsTimerCubeState {
   constructor(scrambleStr = "") {
     this.cube = new mathlib.CubieCube();

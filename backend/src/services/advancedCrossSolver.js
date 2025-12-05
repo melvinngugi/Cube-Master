@@ -1,4 +1,3 @@
-// src/services/advancedCrossSolver.js
 import {
   solveXCrossForScramble,
   solveXXCrossForScramble,
@@ -6,11 +5,7 @@ import {
 } from "../vendor/cstimerCross.js";
 import { CsTimerCubeState } from "../vendor/cstimerCubeState.js";
 
-/**
- * Solve Extended Cross (XCross) for a scramble.
- * @param {string} scramble - scramble string
- * @param {number} face - face index (0 = D, 1 = U, etc.)
- */
+
 export function solveXCross(scramble, face = 0) {
   console.log("=== Starting XCross Solver (csTimer module) ===");
   console.log("Scramble string:", scramble);
@@ -33,11 +28,7 @@ export function solveXCross(scramble, face = 0) {
   return xcrossMoves;
 }
 
-/**
- * Solve Double Extended Cross (XXCross) for a scramble.
- * @param {string} scramble - scramble string
- * @param {number} face - face index
- */
+
 export function solveXXCross(scramble, face = 0) {
   console.log("=== Starting XXCross Solver (csTimer module) ===");
   console.log("Scramble string:", scramble);
@@ -60,11 +51,7 @@ export function solveXXCross(scramble, face = 0) {
   return xxcrossMoves;
 }
 
-/**
- * Solve Triple Extended Cross (XXXCross) for a scramble.
- * @param {string} scramble - scramble string
- * @param {number} face - face index
- */
+
 export function solveXXXCross(scramble, face = 0) {
   console.log("=== Starting XXXCross Solver (csTimer module) ===");
   console.log("Scramble string:", scramble);

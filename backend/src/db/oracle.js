@@ -2,7 +2,7 @@ import oracledb from "oracledb";
 import dotenv from "dotenv";
 dotenv.config();
 
-// Initialize Oracle client with wallet
+//Initialize Oracle client with wallet
 try {
   oracledb.initOracleClient({ configDir: process.env.WALLET_PATH });
   console.log("Oracle client initialized");
@@ -10,14 +10,14 @@ try {
   console.error("Error initializing Oracle client:", err);
 }
 
-// DB config from environment variables
+//DB config from environment variables
 const dbConfig = {
   user: process.env.ORACLE_USER,
   password: process.env.ORACLE_PASSWORD,
   connectionString: process.env.ORACLE_CONNECTION_STRING,
 };
 
-// Get a raw connection (useful for testing)
+//Get a raw connection
 export async function getConnection() {
   try {
     const connection = await oracledb.getConnection(dbConfig);
@@ -29,16 +29,15 @@ export async function getConnection() {
   }
 }
 
-// Execute a single SQL statement with bind parameters
+//Execute a single SQL statement with bind parameters
 export async function execute(sql, binds = {}, options = {}) {
   let connection;
-  options.outFormat = options.outFormat || oracledb.OUT_FORMAT_OBJECT; // return rows as objects
+  options.outFormat = options.outFormat || oracledb.OUT_FORMAT_OBJECT;
 
   try {
     connection = await oracledb.getConnection(dbConfig);
     const result = await connection.execute(sql, binds, options);
 
-    // Commit if it's an insert/update/delete
     if (options.autoCommit || sql.trim().toUpperCase().startsWith("INSERT") || sql.trim().toUpperCase().startsWith("UPDATE") || sql.trim().toUpperCase().startsWith("DELETE")) {
       await connection.commit();
     }

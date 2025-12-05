@@ -1,12 +1,9 @@
-// backend/src/services/cfopGenerator.js
 import { CubeState } from "./cubeModel.js";
 import { solveCross } from "./crossSolver.js";
 import { solveXCross, solveXXCross, solveXXXCross } from "./advancedCrossSolver.js";
 import { normalizeMoves, optimizeMoves } from "../utils/moveUtils.js";
 
-/**
- * Beginner CFOP (2-Look) generator
- */
+
 export async function generateBeginner2LookCFOP(scramble) {
   const cs = new CubeState(scramble);
 
@@ -25,9 +22,7 @@ export async function generateBeginner2LookCFOP(scramble) {
   };
 }
 
-/**
- * Advanced CFOP with Extended Cross (XCross)
- */
+
 export async function generateXCrossCFOP(scramble) {
   const cs = new CubeState(scramble);
 
@@ -46,9 +41,7 @@ export async function generateXCrossCFOP(scramble) {
   };
 }
 
-/**
- * Advanced CFOP with Double Extended Cross (XXCross)
- */
+
 export async function generateXXCrossCFOP(scramble) {
   const cs = new CubeState(scramble);
 
@@ -67,9 +60,7 @@ export async function generateXXCrossCFOP(scramble) {
   };
 }
 
-/**
- * Advanced CFOP with Triple Extended Cross (XXXCross)
- */
+
 export async function generateXXXCrossCFOP(scramble) {
   const cs = new CubeState(scramble);
 

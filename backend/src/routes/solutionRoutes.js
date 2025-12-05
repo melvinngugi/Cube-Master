@@ -1,4 +1,3 @@
-// backend/src/routes/solutionRoutes.js
 import express from "express";
 import {
   generateBeginner2LookCFOP,
@@ -9,7 +8,7 @@ import {
 
 const router = express.Router();
 
-// Beginner CFOP
+//Beginner CFOP
 router.post("/solutions/beginner", async (req, res) => {
   try {
     const { scramble } = req.body;
@@ -24,7 +23,7 @@ router.post("/solutions/beginner", async (req, res) => {
   }
 });
 
-// XCross CFOP
+//XCross CFOP
 router.post("/solutions/xcross", async (req, res) => {
   try {
     const { scramble } = req.body;
@@ -39,7 +38,7 @@ router.post("/solutions/xcross", async (req, res) => {
   }
 });
 
-// XXCross CFOP
+//XXCross CFOP
 router.post("/solutions/xxcross", async (req, res) => {
   try {
     const { scramble } = req.body;
@@ -54,7 +53,7 @@ router.post("/solutions/xxcross", async (req, res) => {
   }
 });
 
-// XXXCross CFOP
+//XXXCross CFOP
 router.post("/solutions/xxxcross", async (req, res) => {
   try {
     const { scramble } = req.body;

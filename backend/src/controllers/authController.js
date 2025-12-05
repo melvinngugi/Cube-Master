@@ -2,13 +2,13 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { createUser, findUserByEmail } from "../models/userModel.js";
 
-// Helper to sign JWT
+//Helper to sign JWT
 const signToken = (user) =>
   jwt.sign({ id: user.ID, email: user.EMAIL }, process.env.JWT_SECRET, {
     expiresIn: "1h",
   });
 
-// Signup controller
+//Signup controller
 export const signup = async (req, res) => {
   try {
     const { username, email, password } = req.body;
@@ -34,7 +34,7 @@ export const signup = async (req, res) => {
   }
 };
 
-// Login controller
+//Login controller
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -59,7 +59,7 @@ export const login = async (req, res) => {
   }
 };
 
-// Profile controller
+//Profile controller
 export const getProfile = async (req, res) => {
   try {
     const authHeader = req.headers.authorization;

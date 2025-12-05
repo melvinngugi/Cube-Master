@@ -1,4 +1,3 @@
-// backend/src/services/cubeModel.js
 import { createRequire } from "node:module";
 import { normalizeMoves } from "../utils/moveUtils.js";
 

@@ -1,4 +1,3 @@
-// backend/src/utils/moveUtils.js
 export function normalizeMoves(seq) {
   if (!seq) return "";
   if (Array.isArray(seq)) {
@@ -26,13 +25,12 @@ export function optimizeMoves(seq) {
       continue;
     }
 
-    // Cancel immediate inverses
     if (invert(m) === last) {
       out.pop();
       continue;
     }
 
-    // Same-face combinations
+    //Same-face combinations
     if (last[0] === m[0]) {
       const face = m[0];
       const a = last.endsWith("'") ? -1 : last.endsWith("2") ? 2 : 1;
@@ -40,7 +38,7 @@ export function optimizeMoves(seq) {
       const sum = a + b;
 
       if (sum === 0) {
-        out.pop(); // e.g., R + R' => cancel
+        out.pop(); // e.g., R + R' = cancel
         continue;
       }
       if (sum === 2) {
@@ -53,12 +51,12 @@ export function optimizeMoves(seq) {
         out.push(`${face}2`);
         continue;
       }
-      if (sum === 3) { // R + R2 => R'
+      if (sum === 3) { // R + R2 = R'
         out.pop();
         out.push(`${face}'`);
         continue;
       }
-      if (sum === -3) { // R' + R2 => R
+      if (sum === -3) { // R' + R2 = R
         out.pop();
         out.push(face);
         continue;

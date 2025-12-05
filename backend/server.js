@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 import authRoutes from "./src/routes/authRoutes.js";
 import solveRoutes from "./src/routes/solveRoutes.js";
 import solutionRoutes from "./src/routes/solutionRoutes.js";
-import algorithmRoutes from "./src/routes/algorithmRoutes.js"; // NEW
+import algorithmRoutes from "./src/routes/algorithmRoutes.js";
 import { getConnection } from "./src/db/oracle.js";
 import progressRoutes from "./src/routes/progressRoutes.js";
 import backfillRoutes from "./src/routes/backfillRoutes.js";
@@ -15,7 +15,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Routes
+//Routes
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/solves", solveRoutes);
 app.use("/api/v1", solutionRoutes);
@@ -23,7 +23,7 @@ app.use("/api/v1", algorithmRoutes);
 app.use("/api/v1", progressRoutes);
 app.use("/api/v1", backfillRoutes);
 
-// Test DB connection
+//Test DB connection
 async function testDBConnection() {
   try {
     const conn = await getConnection();
